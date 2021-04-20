@@ -27,7 +27,12 @@ func main() {
 	p := widgets.NewParagraph()
 	p.Border = false
 	p.SetRect(0, 0, width, height)
-	p.Text = fmt.Sprintf("File: %v\nInner bounds: %v", cmd.ImageFile, p.Inner)
+	p.Text = fmt.Sprintf(
+		"File: %v\nInner width: %v\nInner height: %v",
+		cmd.ImageFile,
+		p.Inner.Dx(),
+		p.Inner.Dy(),
+	)
 
 	ui.Render(p)
 
