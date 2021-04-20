@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"image"
+	_ "image/jpeg"
 	"log"
 	"os"
 
@@ -15,6 +16,18 @@ import (
 func main() {
 	cmd.Execute()
 
+	reader, err := os.Open(cmd.ImageFile)
+	if err != nil {
+		log.Fatalf("Couldn't open image file: %v", err)
+	}
+	defer reader.Close()
+
+	im, format, err := image.Decode(reader)
+	_ = format
+	if err != nil {
+		log.Fatalf("Couldn't decode image: %v", err)
+	}
+
 	width, height, err := term.GetSize(int(os.Stdin.Fd()))
 	if err != nil {
 		log.Fatalf("Couldn't get terminal size: %v", err)
@@ -24,17 +37,11 @@ func main() {
 	}
 	defer ui.Close()
 
-	p := widgets.NewParagraph()
-	p.Border = false
-	p.SetRect(0, 0, width, height)
-	p.Text = fmt.Sprintf(
-		"File: %v\nInner width: %v\nInner height: %v",
-		cmd.ImageFile,
-		p.Inner.Dx(),
-		p.Inner.Dy(),
-	)
+	i := widgets.NewImage(im)
+	i.Border = false
+	i.SetRect(0, 0, width, height)
 
-	ui.Render(p)
+	ui.Render(i)
 
 	for e := range ui.PollEvents() {
 		if e.Type == ui.KeyboardEvent {
