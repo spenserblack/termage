@@ -1,11 +1,7 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/spenserblack/asciiimage/pkg/hello"
-)
+import "github.com/spenserblack/asciiimage/cmd"
 
 func main() {
-	fmt.Println(hello.Greet())
+	cmd.Execute()
 }
