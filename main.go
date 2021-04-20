@@ -9,7 +9,7 @@ import (
 	"github.com/gizak/termui/v3/widgets"
 	"golang.org/x/term"
 
-	"github.com/spenserblack/asciiimage/cmd"
+	"github.com/spenserblack/termage/cmd"
 )
 
 func main() {

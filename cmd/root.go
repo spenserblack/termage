@@ -11,7 +11,7 @@ var (
 	// ImageFile is the filepath to the initial file/directory.
 	ImageFile string
 	rootCmd   = &cobra.Command{
-		Use:   "asciiimage <FILE | DIRECTORY>",
+		Use:   "termage <FILE | DIRECTORY>",
 		Short: "Browse image files as ASCII in your terminal",
 		Long: `This application is a tool to view your image files
 as ASCII art without leaving your terminal`,

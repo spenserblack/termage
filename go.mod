@@ -1,4 +1,4 @@
-module github.com/spenserblack/asciiimage
+module github.com/spenserblack/termage
 
 go 1.16
 
