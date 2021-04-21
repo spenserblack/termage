@@ -17,8 +17,8 @@ var AlphaChars = [...]rune{
 
 // RGBRune represents a colored character.
 type RGBRune struct {
-	r, g, b uint32
-	char    rune
+	R, G, B uint32
+	Rune    rune
 }
 
 // RGBRunes is a helper type for a slice of RGBRunes.

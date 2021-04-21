@@ -21,7 +21,7 @@ func TestAlphaToRune(t *testing.T) {
 		^uint32(0) - 1,
 	} {
 		expected := AlphaChars[i]
-		actual := RGBRuneFromColor(FakeColor(alpha)).char
+		actual := RGBRuneFromColor(FakeColor(alpha)).Rune
 
 		if actual != expected {
 			t.Errorf(`Alpha %v converted to %q, want %q`, alpha, actual, expected)
