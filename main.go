@@ -1,14 +1,10 @@
 package main
 
 import (
-	"image"
-	_ "image/jpeg"
 	"log"
-	"os"
 
-	ui "github.com/gizak/termui/v3"
-	"github.com/gizak/termui/v3/widgets"
-	"golang.org/x/term"
+	"github.com/qeesung/image2ascii/convert"
+	"github.com/rivo/tview"
 
 	"github.com/spenserblack/termage/cmd"
 )
@@ -16,36 +12,37 @@ import (
 func main() {
 	cmd.Execute()
 
-	reader, err := os.Open(cmd.ImageFile)
-	if err != nil {
-		log.Fatalf("Couldn't open image file: %v", err)
-	}
-	defer reader.Close()
+	app := tview.NewApplication()
+	imageView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetText("Image will be drawn here.\nIt can be zoomed into and scrolled.").
+		SetChangedFunc(func() {
+			app.Draw()
+		})
+	titleView := tview.NewTextView().
+		SetText(cmd.ImageFile).
+		SetTextAlign(tview.AlignCenter)
+	footerView := tview.NewTextView().
+		SetText("This is the footer").
+		SetTextAlign(tview.AlignCenter)
 
-	im, format, err := image.Decode(reader)
-	_ = format
-	if err != nil {
-		log.Fatalf("Couldn't decode image: %v", err)
-	}
+	flex := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(titleView, 0, 10, false).
+		AddItem(imageView, 0, 80, false).
+		AddItem(footerView, 0, 10, false)
 
-	width, height, err := term.GetSize(int(os.Stdin.Fd()))
-	if err != nil {
-		log.Fatalf("Couldn't get terminal size: %v", err)
-	}
-	if err := ui.Init(); err != nil {
-		log.Fatalf("Couldn't initialize UI: %v", err)
-	}
-	defer ui.Close()
+	convertOptions := convert.DefaultOptions
 
-	i := widgets.NewImage(im)
-	i.Border = false
-	i.SetRect(0, 0, width, height)
+	converter := convert.NewImageConverter()
 
-	ui.Render(i)
+	imageText := tview.TranslateANSI(
+		converter.ImageFile2ASCIIString(cmd.ImageFile, &convertOptions),
+	)
 
-	for e := range ui.PollEvents() {
-		if e.Type == ui.KeyboardEvent {
-			break
-		}
+	imageView.SetText(imageText)
+
+	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
+		log.Fatal(err)
 	}
 }
