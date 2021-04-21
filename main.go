@@ -25,6 +25,7 @@ func main() {
 	footerView := tview.NewTextView().
 		SetText("This is the footer").
 		SetTextAlign(tview.AlignCenter)
+	footerView.Box = footerView.Box.SetBorder(true)
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
