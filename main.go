@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/nfnt/resize"
+	"golang.org/x/term"
 
 	"github.com/spenserblack/termage/cmd"
 	"github.com/spenserblack/termage/pkg/conversion"
@@ -29,6 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	i = resizeImageToTerm(i)
 	rgbRunes := conversion.RGBRunesFromImage(i)
 
 	s, err := tcell.NewScreen()
@@ -72,4 +75,23 @@ func main() {
 			}
 		}
 	}
+}
+
+var mainTerm = int(os.Stdin.Fd())
+
+func termSize() (width, height int) {
+	var err error
+	width, height, err = term.GetSize(mainTerm)
+	if err != nil {
+		log.Fatalf("Couldn't get terminal size: %v", err)
+	}
+	return
+}
+
+func resizeImageToTerm(i image.Image) image.Image {
+	width, height := termSize()
+	if width < height {
+		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
+	}
+	return resize.Resize(0, uint(height), i, resize.NearestNeighbor)
 }
