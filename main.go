@@ -9,7 +9,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/nfnt/resize"
-	"golang.org/x/term"
 
 	"github.com/spenserblack/termage/cmd"
 	"github.com/spenserblack/termage/pkg/conversion"
@@ -32,9 +31,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	i = resizeImageToTerm(i)
-	rgbRunes := conversion.RGBRunesFromImage(i)
-
 	s, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatal(err)
@@ -45,6 +41,7 @@ func main() {
 	s.SetStyle(tcell.StyleDefault)
 
 	drawImage := func() {
+		rgbRunes := conversion.RGBRunesFromImage(resizeImageToTerm(i, s))
 		s.Clear()
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
@@ -81,17 +78,8 @@ func main() {
 
 var mainTerm = int(os.Stdin.Fd())
 
-func termSize() (width, height int) {
-	var err error
-	width, height, err = term.GetSize(mainTerm)
-	if err != nil {
-		log.Fatalf("Couldn't get terminal size: %v", err)
-	}
-	return
-}
-
-func resizeImageToTerm(i image.Image) image.Image {
-	width, height := termSize()
+func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
+	width, height := s.Size()
 	if width < height {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
