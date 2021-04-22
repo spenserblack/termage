@@ -1,2 +1,3 @@
 # termage
-View/browse images as ASCII in your terminal
+
+Browse images in the terminal
