@@ -33,11 +33,16 @@ func RGBRuneFromColor(c color.Color) RGBRune {
 
 	a = ^a
 
+	alphaIndex := int(a / (^uint32(0) / uint32(len(AlphaChars))))
+	if alphaIndex == 5 {
+		alphaIndex = 4
+	}
+
 	return RGBRune{
 		r,
 		g,
 		b,
-		AlphaChars[int(a/(^uint32(0)/uint32(len(AlphaChars))))],
+		AlphaChars[alphaIndex],
 	}
 }
 
