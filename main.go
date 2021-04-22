@@ -1,49 +1,75 @@
 package main
 
 import (
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
+	"os"
 
-	"github.com/qeesung/image2ascii/convert"
-	"github.com/rivo/tview"
+	"github.com/gdamore/tcell/v2"
 
 	"github.com/spenserblack/termage/cmd"
+	"github.com/spenserblack/termage/pkg/conversion"
 )
 
 func main() {
 	cmd.Execute()
 
-	app := tview.NewApplication()
-	imageView := tview.NewTextView().
-		SetDynamicColors(true).
-		SetText("Image will be drawn here.\nIt can be zoomed into and scrolled.").
-		SetChangedFunc(func() {
-			app.Draw()
-		})
-	titleView := tview.NewTextView().
-		SetText(cmd.ImageFile).
-		SetTextAlign(tview.AlignCenter)
-	footerView := tview.NewTextView().
-		SetText("This is the footer").
-		SetTextAlign(tview.AlignCenter)
-	footerView.Box = footerView.Box.SetBorder(true)
-
-	flex := tview.NewFlex().
-		SetDirection(tview.FlexRow).
-		AddItem(titleView, 0, 10, false).
-		AddItem(imageView, 0, 80, false).
-		AddItem(footerView, 0, 10, false)
-
-	convertOptions := convert.DefaultOptions
-
-	converter := convert.NewImageConverter()
-
-	imageText := tview.TranslateANSI(
-		converter.ImageFile2ASCIIString(cmd.ImageFile, &convertOptions),
-	)
-
-	imageView.SetText(imageText)
-
-	if err := app.SetRoot(flex, true).SetFocus(flex).Run(); err != nil {
+	reader, err := os.Open(cmd.ImageFile)
+	if err != nil {
 		log.Fatal(err)
+	}
+	defer reader.Close()
+
+	i, format, err := image.Decode(reader)
+	_ = format // TODO Display format in title
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rgbRunes := conversion.RGBRunesFromImage(i)
+
+	s, err := tcell.NewScreen()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := s.Init(); err != nil {
+		log.Fatal(err)
+	}
+	s.SetStyle(tcell.StyleDefault)
+
+	drawImage := func() {
+		s.Clear()
+		width, height := rgbRunes.Width(), rgbRunes.Height()
+		for x := 0; x < width; x++ {
+			for y := 0; y < height; y++ {
+				rgbRune := rgbRunes.At(x, y)
+				runeColor := tcell.NewRGBColor(
+					int32(rgbRune.R),
+					int32(rgbRune.G),
+					int32(rgbRune.B),
+				)
+				runeStyle := tcell.StyleDefault.Foreground(runeColor)
+				s.SetContent(x, y, rgbRune.Rune, nil, runeStyle)
+			}
+		}
+		s.Show()
+	}
+
+	drawImage()
+
+	for {
+		switch ev := s.PollEvent().(type) {
+		case *tcell.EventResize:
+			s.Sync()
+			drawImage()
+		case *tcell.EventKey:
+			if ev.Key() == tcell.KeyEscape {
+				s.Fini()
+				os.Exit(0)
+			}
+		}
 	}
 }
