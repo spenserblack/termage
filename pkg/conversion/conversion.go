@@ -31,6 +31,8 @@ type RGBRunes struct {
 func RGBRuneFromColor(c color.Color) RGBRune {
 	r, g, b, a := c.RGBA()
 
+	a = ^a
+
 	return RGBRune{
 		r,
 		g,
