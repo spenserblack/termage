@@ -11,8 +11,8 @@ import (
 	"github.com/nfnt/resize"
 
 	"github.com/spenserblack/termage/cmd"
+	"github.com/spenserblack/termage/internal/helpers"
 	"github.com/spenserblack/termage/pkg/conversion"
-	"github.com/spenserblack/termage/pkg/helpers"
 )
 
 func main() {
