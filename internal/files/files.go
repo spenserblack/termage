@@ -1,94 +1,88 @@
 package files
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
+
+// TODO Check out answer to https://stackoverflow.com/questions/25959386/how-to-check-if-a-file-is-a-valid-image
+// TODO Make FileBrowser a list of file*names* so that it doesn't eat up a massive amount of memory.
 
 // FileBrowser is a tool to browse through files in a directory.
 //
 // It is a helper to browse through image files.
 type FileBrowser struct {
-	index int
-	files []*os.File
+	index     int
+	filenames []string
 }
 
 // NewFileBrowser creates a new file browser from a string pointing to a file
 // or directory. If it is a file, then that is the initial file selected by the
 // returned FileBrowser. If it is a directory, then the index will start at 0.
 func NewFileBrowser(filename string) (browser FileBrowser, err error) {
-	var currentDir *os.File
-
-	file, err := os.Open(filename)
+	var currentDir string
+	absoluteFilename, err := filepath.Abs(filename)
 	if err != nil {
-		return
+		return browser, newFileBrowserError(filename, err)
 	}
-	defer file.Close()
-	fileStats, err := file.Stat()
 
-	if err != nil {
-		return
-	} else if fileStats.IsDir() {
-		currentDir = file
+	if fileInfo, err := os.Stat(filename); err != nil {
+		return browser, newFileBrowserError(filename, err)
+	} else if fileInfo.IsDir() {
+		currentDir = absoluteFilename
 	} else {
-		dirname := filepath.Dir(filename)
-		currentDir, err = os.Open(dirname)
-		if err != nil {
-			return browser, err
-		}
-		defer currentDir.Close()
+		currentDir = filepath.Dir(absoluteFilename)
 	}
 
-	// TODO Use a sane maximum?
-	dirnames, err := currentDir.Readdirnames(0)
+	matches, err := filepath.Glob(filepath.Join(currentDir, "*"))
+	if err != nil {
+		return
+	}
+	currentFileStats, err := os.Stat(absoluteFilename)
 	if err != nil {
 		return
 	}
 
-	// NOTE This assumes that at least the majority of files are images
-	browser.files = make([]*os.File, 0, len(dirnames))
-	for i, name := range dirnames {
-		f, err := os.Open(name)
+	for i, fpath := range matches {
+		absFpath, err := filepath.Abs(fpath)
 		if err != nil {
 			return browser, err
 		}
-
-		stats, err := f.Stat()
+		fileStats, err := os.Stat(absFpath)
 		if err != nil {
 			return browser, err
 		}
-
-		if os.SameFile(stats, fileStats) {
+		if fileStats.IsDir() {
+			continue
+		}
+		if os.SameFile(currentFileStats, fileStats) {
 			browser.index = i
 		}
-		// TODO Limit to only image files
-		browser.files = append(browser.files, f)
+		browser.filenames = append(browser.filenames, absFpath)
 	}
 	return
 }
 
-// Close closes all files in the FileBrowser.
-func (browser *FileBrowser) Close() {
-	for _, f := range browser.files {
-		f.Close()
-	}
-}
-
 // Forward moves forward one file.
 func (browser *FileBrowser) Forward() {
-	browser.index = (browser.index + 1) % len(browser.files)
+	browser.index = (browser.index + 1) % len(browser.filenames)
 }
 
 // Back moves back one file.
 func (browser *FileBrowser) Back() {
 	if browser.index <= 0 {
-		browser.index = len(browser.files) - 1
+		browser.index = len(browser.filenames) - 1
 	} else {
 		browser.index--
 	}
 }
 
 // Current gets the current file.
-func (browser *FileBrowser) Current() *os.File {
-	return browser.files[browser.index]
+func (browser *FileBrowser) Current() string {
+	return browser.filenames[browser.index]
+}
+
+func newFileBrowserError(filename string, err error) error {
+	return fmt.Errorf("Couldn't initialize file browser for %q: %w", filename, err)
 }
