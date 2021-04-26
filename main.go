@@ -11,6 +11,7 @@ import (
 	"github.com/nfnt/resize"
 
 	"github.com/spenserblack/termage/cmd"
+	"github.com/spenserblack/termage/internal/files"
 	"github.com/spenserblack/termage/internal/helpers"
 	"github.com/spenserblack/termage/pkg/conversion"
 )
@@ -18,11 +19,14 @@ import (
 func main() {
 	cmd.Execute()
 
-	reader, err := os.Open(cmd.ImageFile)
+	browser, err := files.NewFileBrowser(cmd.ImageFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer reader.Close()
+	reader, err := os.Open(browser.Current())
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	i, format, err := image.Decode(reader)
 	_ = format // TODO Display format in title
@@ -68,9 +72,41 @@ func main() {
 			s.Sync()
 			drawImage()
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape {
+			switch ev.Key() {
+			case tcell.KeyEscape:
 				s.Fini()
 				os.Exit(0)
+			case tcell.KeyRune:
+				switch ev.Rune() {
+				case 'n':
+					browser.Forward()
+					reader.Close()
+					reader, err := os.Open(browser.Current())
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					i, _, err = image.Decode(reader)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+					drawImage()
+				case 'N':
+					browser.Back()
+					reader.Close()
+					reader, err := os.Open(browser.Current())
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					i, _, err = image.Decode(reader)
+
+					if err != nil {
+						log.Fatal(err)
+					}
+					drawImage()
+				}
 			}
 		}
 	}
