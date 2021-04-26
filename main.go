@@ -16,6 +16,8 @@ import (
 	"github.com/spenserblack/termage/pkg/conversion"
 )
 
+const titleBarPixels = 1
+
 func main() {
 	cmd.Execute()
 
@@ -69,7 +71,7 @@ func main() {
 		s.Clear()
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
-			for y := 0; y < height; y++ {
+			for y := titleBarPixels; y < height; y++ {
 				rgbRune := rgbRunes.At(x, y)
 				runeColor := tcell.NewRGBColor(
 					// NOTE Takes 32-bit int, but requires range 0-255
@@ -117,6 +119,7 @@ func main() {
 
 func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 	width, height := s.Size()
+	height -= titleBarPixels
 	if width < height {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
