@@ -7,6 +7,7 @@ import (
 	_ "image/png"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/nfnt/resize"
@@ -60,7 +61,7 @@ func main() {
 		}
 
 		originalImage, format, err = image.Decode(reader)
-		title = fmt.Sprintf("%v [%v]", currentFile, format)
+		title = fmt.Sprintf("%v [%v]", filepath.Base(currentFile), format)
 
 		if err != nil {
 			log.Fatal(err)
