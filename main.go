@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
@@ -38,9 +39,8 @@ func main() {
 		originalImage image.Image
 		resizedImage  image.Image
 		format        string
+		title         string
 	)
-
-	_ = format // TODO Display format in title
 
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -53,12 +53,14 @@ func main() {
 
 	loadImage := func() {
 		reader.Close()
-		reader, err := os.Open(browser.Current())
+		currentFile := browser.Current()
+		reader, err := os.Open(currentFile)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		originalImage, format, err = image.Decode(reader)
+		title = fmt.Sprintf("%v [%v]", currentFile, format)
 
 		if err != nil {
 			log.Fatal(err)
@@ -66,9 +68,18 @@ func main() {
 		resizedImage = resizeImageToTerm(originalImage, s)
 	}
 
+	drawTitle := func() {
+		runes := []rune(title)
+		width, _ := s.Size()
+		center := width / 2
+		runesStart := center - (len(runes) / 2)
+		for i, r := range runes {
+			s.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
+		}
+	}
+
 	drawImage := func() {
 		rgbRunes := conversion.RGBRunesFromImage(resizedImage)
-		s.Clear()
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
 			for y := titleBarPixels; y < height; y++ {
@@ -83,17 +94,23 @@ func main() {
 				s.SetContent(x, y, rgbRune.Rune, nil, runeStyle)
 			}
 		}
+	}
+
+	draw := func() {
+		s.Clear()
+		drawTitle()
+		drawImage()
 		s.Show()
 	}
 
 	loadImage()
-	drawImage()
+	draw()
 
 	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
 			s.Sync()
-			drawImage()
+			draw()
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
@@ -105,12 +122,12 @@ func main() {
 					browser.Forward()
 
 					loadImage()
-					drawImage()
+					draw()
 				case 'N':
 					browser.Back()
 
 					loadImage()
-					drawImage()
+					draw()
 				}
 			}
 		}
