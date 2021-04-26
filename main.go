@@ -19,7 +19,15 @@ import (
 func main() {
 	cmd.Execute()
 
-	browser, err := files.NewFileBrowser(cmd.ImageFile)
+	var browser files.FileBrowser
+	var err error
+
+	if len(cmd.ImageFiles) != 0 {
+		browser = files.FileBrowser{Filenames: cmd.ImageFiles}
+	} else {
+		browser, err = files.NewFileBrowser(cmd.ImageFile)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
