@@ -76,8 +76,6 @@ func main() {
 	}
 }
 
-var mainTerm = int(os.Stdin.Fd())
-
 func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 	width, height := s.Size()
 	if width < height {
