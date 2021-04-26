@@ -109,6 +109,20 @@ func main() {
 
 					loadImage()
 					drawImage()
+				case 'z':
+					resizedImage = zoomImage(
+						originalImage,
+						10,
+						resizedImage.Bounds().Max,
+					)
+					drawImage()
+				case 'Z':
+					resizedImage = zoomImage(
+						originalImage,
+						-10,
+						resizedImage.Bounds().Max,
+					)
+					drawImage()
 				}
 			}
 		}
@@ -121,4 +135,17 @@ func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
 	return resize.Resize(0, uint(height), i, resize.NearestNeighbor)
+}
+
+func zoomImage(
+	original image.Image,
+	percentage int,
+	maxBound image.Point,
+) image.Image {
+	return resize.Resize(
+		uint(maxBound.X+(maxBound.X*percentage/100)),
+		uint(maxBound.Y+(maxBound.Y*percentage/100)),
+		original,
+		resize.NearestNeighbor,
+	)
 }
