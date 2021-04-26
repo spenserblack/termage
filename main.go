@@ -28,12 +28,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	i, format, err := image.Decode(reader)
+	originalImage, format, err := image.Decode(reader)
 	_ = format // TODO Display format in title
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var resizedImage image.Image
 
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -45,7 +47,7 @@ func main() {
 	s.SetStyle(tcell.StyleDefault)
 
 	drawImage := func() {
-		rgbRunes := conversion.RGBRunesFromImage(resizeImageToTerm(i, s))
+		rgbRunes := conversion.RGBRunesFromImage(resizedImage)
 		s.Clear()
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
@@ -64,6 +66,7 @@ func main() {
 		s.Show()
 	}
 
+	resizedImage = resizeImageToTerm(originalImage, s)
 	drawImage()
 
 	for {
@@ -86,7 +89,8 @@ func main() {
 						log.Fatal(err)
 					}
 
-					i, _, err = image.Decode(reader)
+					originalImage, _, err = image.Decode(reader)
+					resizedImage = resizeImageToTerm(originalImage, s)
 
 					if err != nil {
 						log.Fatal(err)
@@ -100,7 +104,8 @@ func main() {
 						log.Fatal(err)
 					}
 
-					i, _, err = image.Decode(reader)
+					originalImage, _, err = image.Decode(reader)
+					resizedImage = resizeImageToTerm(originalImage, s)
 
 					if err != nil {
 						log.Fatal(err)
