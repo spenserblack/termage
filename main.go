@@ -90,7 +90,7 @@ func main() {
 	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
-			s.Sync()
+			resizedImage = resizeImageToTerm(originalImage, s)
 			drawImage()
 		case *tcell.EventKey:
 			switch ev.Key() {
