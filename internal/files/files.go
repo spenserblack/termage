@@ -14,7 +14,7 @@ import (
 // It is a helper to browse through image files.
 type FileBrowser struct {
 	index     int
-	filenames []string
+	Filenames []string
 }
 
 // NewFileBrowser creates a new file browser from a string pointing to a file
@@ -59,20 +59,20 @@ func NewFileBrowser(filename string) (browser FileBrowser, err error) {
 		if os.SameFile(currentFileStats, fileStats) {
 			browser.index = i
 		}
-		browser.filenames = append(browser.filenames, absFpath)
+		browser.Filenames = append(browser.Filenames, absFpath)
 	}
 	return
 }
 
 // Forward moves forward one file.
 func (browser *FileBrowser) Forward() {
-	browser.index = (browser.index + 1) % len(browser.filenames)
+	browser.index = (browser.index + 1) % len(browser.Filenames)
 }
 
 // Back moves back one file.
 func (browser *FileBrowser) Back() {
 	if browser.index <= 0 {
-		browser.index = len(browser.filenames) - 1
+		browser.index = len(browser.Filenames) - 1
 	} else {
 		browser.index--
 	}
@@ -80,7 +80,7 @@ func (browser *FileBrowser) Back() {
 
 // Current gets the current file.
 func (browser *FileBrowser) Current() string {
-	return browser.filenames[browser.index]
+	return browser.Filenames[browser.index]
 }
 
 func newFileBrowserError(filename string, err error) error {
