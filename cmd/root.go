@@ -15,7 +15,7 @@ var (
 	// This will be used when user specifies more than 1 image.
 	ImageFiles []string = nil
 	rootCmd             = &cobra.Command{
-		Use:   "termage <FILE | DIRECTORY>",
+		Use:   "termage {<FILE | DIRECTORY> | <FILES...>}",
 		Short: "Browse image files as ASCII in your terminal",
 		Long: `This application is a tool to view your image files
 as ASCII art without leaving your terminal.
