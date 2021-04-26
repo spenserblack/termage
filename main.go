@@ -123,6 +123,9 @@ func main() {
 						resizedImage.Bounds().Max,
 					)
 					drawImage()
+				case 'f':
+					resizedImage = resizeImageToTerm(originalImage, s)
+					drawImage()
 				}
 			}
 		}
