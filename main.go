@@ -23,19 +23,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	reader, err := os.Open(browser.Current())
-	if err != nil {
-		log.Fatal(err)
-	}
+	var (
+		reader        *os.File
+		originalImage image.Image
+		resizedImage  image.Image
+		format        string
+	)
 
-	originalImage, format, err := image.Decode(reader)
 	_ = format // TODO Display format in title
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var resizedImage image.Image
 
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -45,6 +40,21 @@ func main() {
 		log.Fatal(err)
 	}
 	s.SetStyle(tcell.StyleDefault)
+
+	loadImage := func() {
+		reader.Close()
+		reader, err := os.Open(browser.Current())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		originalImage, format, err = image.Decode(reader)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		resizedImage = resizeImageToTerm(originalImage, s)
+	}
 
 	drawImage := func() {
 		rgbRunes := conversion.RGBRunesFromImage(resizedImage)
@@ -66,7 +76,7 @@ func main() {
 		s.Show()
 	}
 
-	resizedImage = resizeImageToTerm(originalImage, s)
+	loadImage()
 	drawImage()
 
 	for {
@@ -83,33 +93,13 @@ func main() {
 				switch ev.Rune() {
 				case 'n':
 					browser.Forward()
-					reader.Close()
-					reader, err := os.Open(browser.Current())
-					if err != nil {
-						log.Fatal(err)
-					}
 
-					originalImage, _, err = image.Decode(reader)
-					resizedImage = resizeImageToTerm(originalImage, s)
-
-					if err != nil {
-						log.Fatal(err)
-					}
+					loadImage()
 					drawImage()
 				case 'N':
 					browser.Back()
-					reader.Close()
-					reader, err := os.Open(browser.Current())
-					if err != nil {
-						log.Fatal(err)
-					}
 
-					originalImage, _, err = image.Decode(reader)
-					resizedImage = resizeImageToTerm(originalImage, s)
-
-					if err != nil {
-						log.Fatal(err)
-					}
+					loadImage()
 					drawImage()
 				}
 			}
