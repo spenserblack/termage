@@ -116,6 +116,16 @@ func main() {
 			xMod++
 		}
 	}
+	shiftUp := func(screenHeight, bottomBorder int) {
+		if yMod > screenHeight-bottomBorder {
+			yMod--
+		}
+	}
+	shiftDown := func(topBorder int) {
+		if yMod < topBorder {
+			yMod++
+		}
+	}
 
 	loadImage()
 	draw()
@@ -170,6 +180,26 @@ func main() {
 					rightBound := resizedImage.Bounds().Max.X
 					for i := 0; i < rightBound/10; i++ {
 						shiftLeft(width, rightBound)
+					}
+					draw()
+				case 'j':
+					shiftDown(resizedImage.Bounds().Min.Y)
+					draw()
+				case 'J':
+					bounds := resizedImage.Bounds()
+					for i := 0; i < bounds.Max.Y/10; i++ {
+						shiftDown(bounds.Min.Y)
+					}
+					draw()
+				case 'k':
+					_, height := s.Size()
+					shiftUp(height, resizedImage.Bounds().Max.Y)
+					draw()
+				case 'K':
+					_, height := s.Size()
+					bottomBound := resizedImage.Bounds().Max.Y
+					for i := 0; i < bottomBound/10; i++ {
+						shiftUp(height, bottomBound)
 					}
 					draw()
 				case 'l':
