@@ -86,6 +86,9 @@ func main() {
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
 			for y := titleBarPixels; y < height; y++ {
+				if y+yMod <= titleBarPixels {
+					continue
+				}
 				rgbRune := rgbRunes.At(x, y)
 				runeColor := tcell.NewRGBColor(
 					// NOTE Takes 32-bit int, but requires range 0-255
