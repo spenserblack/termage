@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/nfnt/resize"
@@ -15,6 +17,8 @@ import (
 	"github.com/spenserblack/termage/internal/helpers"
 	"github.com/spenserblack/termage/pkg/conversion"
 )
+
+const titleBarPixels = 1
 
 func main() {
 	cmd.Execute()
@@ -36,9 +40,8 @@ func main() {
 		originalImage image.Image
 		resizedImage  image.Image
 		format        string
+		title         string
 	)
-
-	_ = format // TODO Display format in title
 
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -51,12 +54,14 @@ func main() {
 
 	loadImage := func() {
 		reader.Close()
-		reader, err := os.Open(browser.Current())
+		currentFile := browser.Current()
+		reader, err := os.Open(currentFile)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		originalImage, format, err = image.Decode(reader)
+		title = fmt.Sprintf("%v [%v]", filepath.Base(currentFile), format)
 
 		if err != nil {
 			log.Fatal(err)
@@ -64,12 +69,21 @@ func main() {
 		resizedImage = resizeImageToTerm(originalImage, s)
 	}
 
+	drawTitle := func() {
+		runes := []rune(title)
+		width, _ := s.Size()
+		center := width / 2
+		runesStart := center - (len(runes) / 2)
+		for i, r := range runes {
+			s.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
+		}
+	}
+
 	drawImage := func() {
 		rgbRunes := conversion.RGBRunesFromImage(resizedImage)
-		s.Clear()
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
-			for y := 0; y < height; y++ {
+			for y := titleBarPixels; y < height; y++ {
 				rgbRune := rgbRunes.At(x, y)
 				runeColor := tcell.NewRGBColor(
 					// NOTE Takes 32-bit int, but requires range 0-255
@@ -81,17 +95,23 @@ func main() {
 				s.SetContent(x, y, rgbRune.Rune, nil, runeStyle)
 			}
 		}
+	}
+
+	draw := func() {
+		s.Clear()
+		drawTitle()
+		drawImage()
 		s.Show()
 	}
 
 	loadImage()
-	drawImage()
+	draw()
 
 	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
 			resizedImage = resizeImageToTerm(originalImage, s)
-			drawImage()
+			draw()
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
@@ -103,29 +123,29 @@ func main() {
 					browser.Forward()
 
 					loadImage()
-					drawImage()
+					draw()
 				case 'N':
 					browser.Back()
 
 					loadImage()
-					drawImage()
+					draw()
 				case 'z':
 					resizedImage = zoomImage(
 						originalImage,
 						10,
 						resizedImage.Bounds().Max,
 					)
-					drawImage()
+					draw()
 				case 'Z':
 					resizedImage = zoomImage(
 						originalImage,
 						-10,
 						resizedImage.Bounds().Max,
 					)
-					drawImage()
+					draw()
 				case 'f':
 					resizedImage = resizeImageToTerm(originalImage, s)
-					drawImage()
+					draw()
 				}
 			}
 		}
@@ -134,6 +154,7 @@ func main() {
 
 func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 	width, height := s.Size()
+	height -= titleBarPixels
 	if width < height {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
