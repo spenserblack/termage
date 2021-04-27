@@ -6,9 +6,6 @@ import (
 	"path/filepath"
 )
 
-// TODO Check out answer to https://stackoverflow.com/questions/25959386/how-to-check-if-a-file-is-a-valid-image
-// TODO Make FileBrowser a list of file*names* so that it doesn't eat up a massive amount of memory.
-
 // FileBrowser is a tool to browse through files in a directory.
 //
 // It is a helper to browse through image files.
