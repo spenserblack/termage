@@ -41,6 +41,8 @@ func main() {
 		resizedImage  image.Image
 		format        string
 		title         string
+		// Modifiers for x and y coordinates of image
+		xMod, yMod int
 	)
 
 	s, err := tcell.NewScreen()
@@ -92,7 +94,7 @@ func main() {
 					int32(helpers.BitshiftTo8Bit(rgbRune.B>>8)),
 				)
 				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				s.SetContent(x, y, rgbRune.Rune, nil, runeStyle)
+				s.SetContent(x+xMod, y+yMod, rgbRune.Rune, nil, runeStyle)
 			}
 		}
 	}
@@ -102,6 +104,17 @@ func main() {
 		drawTitle()
 		drawImage()
 		s.Show()
+	}
+
+	shiftLeft := func(screenWidth, rightBorder int) {
+		if xMod > screenWidth-rightBorder {
+			xMod--
+		}
+	}
+	shiftRight := func(leftBorder int) {
+		if xMod < leftBorder {
+			xMod++
+		}
 	}
 
 	loadImage()
@@ -144,7 +157,29 @@ func main() {
 					)
 					draw()
 				case 'f':
+					xMod = 0
+					yMod = 0
 					resizedImage = resizeImageToTerm(originalImage, s)
+					draw()
+				case 'h':
+					width, _ := s.Size()
+					shiftLeft(width, resizedImage.Bounds().Max.X)
+					draw()
+				case 'H':
+					width, _ := s.Size()
+					rightBound := resizedImage.Bounds().Max.X
+					for i := 0; i < rightBound/10; i++ {
+						shiftLeft(width, rightBound)
+					}
+					draw()
+				case 'l':
+					shiftRight(resizedImage.Bounds().Min.X)
+					draw()
+				case 'L':
+					bounds := resizedImage.Bounds()
+					for i := 0; i < bounds.Max.X/10; i++ {
+						shiftRight(bounds.Min.X)
+					}
 					draw()
 				}
 			}
