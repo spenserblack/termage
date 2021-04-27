@@ -84,9 +84,12 @@ func main() {
 	drawImage := func() {
 		rgbRunes := conversion.RGBRunesFromImage(resizedImage)
 		width, height := rgbRunes.Width(), rgbRunes.Height()
+		screenWidth, screenHeight := s.Size()
+		xOrigin := screenWidth / 2
+		yOrigin := (screenHeight - titleBarPixels) / 2
 		for x := 0; x < width; x++ {
 			for y := titleBarPixels; y < height; y++ {
-				if y+yMod <= titleBarPixels {
+				if (yOrigin-height/2)+y+yMod <= titleBarPixels {
 					continue
 				}
 				rgbRune := rgbRunes.At(x, y)
@@ -97,7 +100,13 @@ func main() {
 					int32(helpers.BitshiftTo8Bit(rgbRune.B>>8)),
 				)
 				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				s.SetContent(x+xMod, y+yMod, rgbRune.Rune, nil, runeStyle)
+				s.SetContent(
+					(xOrigin-width/2)+(x+xMod),
+					(yOrigin-height/2)+(y+yMod),
+					rgbRune.Rune,
+					nil,
+					runeStyle,
+				)
 			}
 		}
 	}
