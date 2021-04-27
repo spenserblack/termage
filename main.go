@@ -84,9 +84,12 @@ func main() {
 	drawImage := func() {
 		rgbRunes := conversion.RGBRunesFromImage(resizedImage)
 		width, height := rgbRunes.Width(), rgbRunes.Height()
+		screenWidth, screenHeight := s.Size()
+		xOrigin := screenWidth / 2
+		yOrigin := (screenHeight - titleBarPixels) / 2
 		for x := 0; x < width; x++ {
 			for y := titleBarPixels; y < height; y++ {
-				if y+yMod <= titleBarPixels {
+				if (yOrigin-height/2)+y+yMod <= titleBarPixels {
 					continue
 				}
 				rgbRune := rgbRunes.At(x, y)
@@ -97,7 +100,13 @@ func main() {
 					int32(helpers.BitshiftTo8Bit(rgbRune.B>>8)),
 				)
 				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				s.SetContent(x+xMod, y+yMod, rgbRune.Rune, nil, runeStyle)
+				s.SetContent(
+					(xOrigin-width/2)+(x+xMod),
+					(yOrigin-height/2)+(y+yMod),
+					rgbRune.Rune,
+					nil,
+					runeStyle,
+				)
 			}
 		}
 	}
@@ -109,23 +118,23 @@ func main() {
 		s.Show()
 	}
 
-	shiftLeft := func(screenWidth, rightBorder int) {
-		if xMod > screenWidth-rightBorder {
+	shiftLeft := func(screenWidth, imageWidth int) {
+		if xMod > (screenWidth-imageWidth)/2 {
 			xMod--
 		}
 	}
-	shiftRight := func(leftBorder int) {
-		if xMod < leftBorder {
+	shiftRight := func(screenWidth, imageWidth int) {
+		if xMod < (imageWidth-screenWidth)/2 {
 			xMod++
 		}
 	}
-	shiftUp := func(screenHeight, bottomBorder int) {
-		if yMod > screenHeight-bottomBorder {
+	shiftUp := func(screenHeight, imageHeight int) {
+		if yMod > (screenHeight-imageHeight)/2 {
 			yMod--
 		}
 	}
-	shiftDown := func(topBorder int) {
-		if yMod < topBorder {
+	shiftDown := func(screenHeight, imageHeight int) {
+		if yMod < (imageHeight-screenHeight)/2 {
 			yMod++
 		}
 	}
@@ -186,12 +195,14 @@ func main() {
 					}
 					draw()
 				case 'j':
-					shiftDown(resizedImage.Bounds().Min.Y)
+					_, height := s.Size()
+					shiftDown(height, resizedImage.Bounds().Max.Y)
 					draw()
 				case 'J':
+					_, height := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.Y/10; i++ {
-						shiftDown(bounds.Min.Y)
+						shiftDown(height, bounds.Max.Y)
 					}
 					draw()
 				case 'k':
@@ -206,12 +217,14 @@ func main() {
 					}
 					draw()
 				case 'l':
-					shiftRight(resizedImage.Bounds().Min.X)
+					width, _ := s.Size()
+					shiftRight(width, resizedImage.Bounds().Max.X)
 					draw()
 				case 'L':
+					width, _ := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.X/10; i++ {
-						shiftRight(bounds.Min.X)
+						shiftRight(width, bounds.Max.X)
 					}
 					draw()
 				}
