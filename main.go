@@ -41,6 +41,8 @@ func main() {
 		resizedImage  image.Image
 		format        string
 		title         string
+		// Modifiers for x and y coordinates of image
+		xMod, yMod int
 	)
 
 	s, err := tcell.NewScreen()
@@ -84,6 +86,9 @@ func main() {
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		for x := 0; x < width; x++ {
 			for y := titleBarPixels; y < height; y++ {
+				if y+yMod <= titleBarPixels {
+					continue
+				}
 				rgbRune := rgbRunes.At(x, y)
 				runeColor := tcell.NewRGBColor(
 					// NOTE Takes 32-bit int, but requires range 0-255
@@ -92,7 +97,7 @@ func main() {
 					int32(helpers.BitshiftTo8Bit(rgbRune.B>>8)),
 				)
 				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				s.SetContent(x, y, rgbRune.Rune, nil, runeStyle)
+				s.SetContent(x+xMod, y+yMod, rgbRune.Rune, nil, runeStyle)
 			}
 		}
 	}
@@ -102,6 +107,27 @@ func main() {
 		drawTitle()
 		drawImage()
 		s.Show()
+	}
+
+	shiftLeft := func(screenWidth, rightBorder int) {
+		if xMod > screenWidth-rightBorder {
+			xMod--
+		}
+	}
+	shiftRight := func(leftBorder int) {
+		if xMod < leftBorder {
+			xMod++
+		}
+	}
+	shiftUp := func(screenHeight, bottomBorder int) {
+		if yMod > screenHeight-bottomBorder {
+			yMod--
+		}
+	}
+	shiftDown := func(topBorder int) {
+		if yMod < topBorder {
+			yMod++
+		}
 	}
 
 	loadImage()
@@ -129,6 +155,65 @@ func main() {
 
 					loadImage()
 					draw()
+				case 'z':
+					resizedImage = zoomImage(
+						originalImage,
+						10,
+						resizedImage.Bounds().Max,
+					)
+					draw()
+				case 'Z':
+					resizedImage = zoomImage(
+						originalImage,
+						-10,
+						resizedImage.Bounds().Max,
+					)
+					draw()
+				case 'f':
+					xMod = 0
+					yMod = 0
+					resizedImage = resizeImageToTerm(originalImage, s)
+					draw()
+				case 'h':
+					width, _ := s.Size()
+					shiftLeft(width, resizedImage.Bounds().Max.X)
+					draw()
+				case 'H':
+					width, _ := s.Size()
+					rightBound := resizedImage.Bounds().Max.X
+					for i := 0; i < rightBound/10; i++ {
+						shiftLeft(width, rightBound)
+					}
+					draw()
+				case 'j':
+					shiftDown(resizedImage.Bounds().Min.Y)
+					draw()
+				case 'J':
+					bounds := resizedImage.Bounds()
+					for i := 0; i < bounds.Max.Y/10; i++ {
+						shiftDown(bounds.Min.Y)
+					}
+					draw()
+				case 'k':
+					_, height := s.Size()
+					shiftUp(height, resizedImage.Bounds().Max.Y)
+					draw()
+				case 'K':
+					_, height := s.Size()
+					bottomBound := resizedImage.Bounds().Max.Y
+					for i := 0; i < bottomBound/10; i++ {
+						shiftUp(height, bottomBound)
+					}
+					draw()
+				case 'l':
+					shiftRight(resizedImage.Bounds().Min.X)
+					draw()
+				case 'L':
+					bounds := resizedImage.Bounds()
+					for i := 0; i < bounds.Max.X/10; i++ {
+						shiftRight(bounds.Min.X)
+					}
+					draw()
 				}
 			}
 		}
@@ -142,4 +227,17 @@ func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
 	return resize.Resize(0, uint(height), i, resize.NearestNeighbor)
+}
+
+func zoomImage(
+	original image.Image,
+	percentage int,
+	maxBound image.Point,
+) image.Image {
+	return resize.Resize(
+		uint(maxBound.X+(maxBound.X*percentage/100)),
+		uint(maxBound.Y+(maxBound.Y*percentage/100)),
+		original,
+		resize.NearestNeighbor,
+	)
 }
