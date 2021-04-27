@@ -128,13 +128,13 @@ func main() {
 			xMod++
 		}
 	}
-	shiftUp := func(screenHeight, bottomBorder int) {
-		if yMod > screenHeight-bottomBorder {
+	shiftUp := func(screenHeight, imageHeight int) {
+		if yMod > (screenHeight-imageHeight)/2 {
 			yMod--
 		}
 	}
-	shiftDown := func(topBorder int) {
-		if yMod < topBorder {
+	shiftDown := func(screenHeight, imageHeight int) {
+		if yMod < (imageHeight-screenHeight)/2 {
 			yMod++
 		}
 	}
@@ -195,12 +195,14 @@ func main() {
 					}
 					draw()
 				case 'j':
-					shiftDown(resizedImage.Bounds().Min.Y)
+					_, height := s.Size()
+					shiftDown(height, resizedImage.Bounds().Max.Y)
 					draw()
 				case 'J':
+					_, height := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.Y/10; i++ {
-						shiftDown(bounds.Min.Y)
+						shiftDown(height, bounds.Max.Y)
 					}
 					draw()
 				case 'k':
