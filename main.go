@@ -118,13 +118,13 @@ func main() {
 		s.Show()
 	}
 
-	shiftLeft := func(screenWidth, rightBorder int) {
-		if xMod > screenWidth-rightBorder {
+	shiftLeft := func(screenWidth, imageWidth int) {
+		if xMod > (screenWidth-imageWidth)/2 {
 			xMod--
 		}
 	}
-	shiftRight := func(leftBorder int) {
-		if xMod < leftBorder {
+	shiftRight := func(screenWidth, imageWidth int) {
+		if xMod < (imageWidth-screenWidth)/2 {
 			xMod++
 		}
 	}
@@ -215,12 +215,14 @@ func main() {
 					}
 					draw()
 				case 'l':
-					shiftRight(resizedImage.Bounds().Min.X)
+					width, _ := s.Size()
+					shiftRight(width, resizedImage.Bounds().Max.X)
 					draw()
 				case 'L':
+					width, _ := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.X/10; i++ {
-						shiftRight(bounds.Min.X)
+						shiftRight(width, bounds.Max.X)
 					}
 					draw()
 				}
