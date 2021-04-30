@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // FileBrowser is a tool to browse through files in a directory.
@@ -17,7 +18,7 @@ type FileBrowser struct {
 // NewFileBrowser creates a new file browser from a string pointing to a file
 // or directory. If it is a file, then that is the initial file selected by the
 // returned FileBrowser. If it is a directory, then the index will start at 0.
-func NewFileBrowser(filename string) (browser FileBrowser, err error) {
+func NewFileBrowser(filename string, extensions map[string]struct{}) (browser FileBrowser, err error) {
 	var currentDir string
 	absoluteFilename, err := filepath.Abs(filename)
 	if err != nil {
@@ -42,6 +43,10 @@ func NewFileBrowser(filename string) (browser FileBrowser, err error) {
 	}
 
 	for i, fpath := range matches {
+		// NOTE Skips if extension is not supported
+		if _, ok := extensions[strings.ToLower(filepath.Ext(fpath))]; !ok {
+			continue
+		}
 		absFpath, err := filepath.Abs(fpath)
 		if err != nil {
 			return browser, err
