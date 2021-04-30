@@ -20,6 +20,12 @@ import (
 
 const titleBarPixels = 1
 
+var supportedExtensions = []string{
+	"jpeg",
+	"jpg",
+	"png",
+}
+
 func main() {
 	cmd.Execute()
 
@@ -29,7 +35,11 @@ func main() {
 	if len(cmd.ImageFiles) != 0 {
 		browser = files.FileBrowser{Filenames: cmd.ImageFiles}
 	} else {
-		browser, err = files.NewFileBrowser(cmd.ImageFile)
+		supported := make(map[string]struct{})
+		for _, v := range supportedExtensions {
+			supported["."+v] = struct{}{}
+		}
+		browser, err = files.NewFileBrowser(cmd.ImageFile, supported)
 	}
 
 	if err != nil {
