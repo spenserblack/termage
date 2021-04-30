@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"image"
-	_ "image/gif"
+	"image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/nfnt/resize"
@@ -17,6 +18,7 @@ import (
 	"github.com/spenserblack/termage/internal/files"
 	"github.com/spenserblack/termage/internal/helpers"
 	"github.com/spenserblack/termage/pkg/conversion"
+	tgif "github.com/spenserblack/termage/pkg/gif"
 )
 
 const titleBarPixels = 1
@@ -128,10 +130,36 @@ func main() {
 	}
 
 	draw := func() {
-		s.Clear()
-		drawTitle()
-		drawImage()
-		s.Show()
+		switch format {
+		case "gif":
+			reader.Seek(0, 0)
+			g, err := gif.DecodeAll(reader)
+			if err != nil {
+				break
+			}
+			gifHelper, err := tgif.NewHelper(g)
+			if err != nil {
+				break
+			}
+			go func() {
+				for {
+					resizedImage = resizeImageToTerm(gifHelper.Current, s)
+					time.Sleep(gifHelper.Delay())
+					if err := gifHelper.NextFrame(); err != nil {
+						return
+					}
+					s.Clear()
+					drawTitle()
+					drawImage()
+					s.Show()
+				}
+			}()
+		default:
+			s.Clear()
+			drawTitle()
+			drawImage()
+			s.Show()
+		}
 	}
 
 	shiftLeft := func(screenWidth, imageWidth int) {
