@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
@@ -24,6 +25,7 @@ var supportedExtensions = []string{
 	"jpeg",
 	"jpg",
 	"png",
+	"gif",
 }
 
 func main() {
