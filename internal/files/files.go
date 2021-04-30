@@ -83,3 +83,8 @@ func (browser *FileBrowser) Current() string {
 func newFileBrowserError(filename string, err error) error {
 	return fmt.Errorf("Couldn't initialize file browser for %q: %w", filename, err)
 }
+
+// IsEmpty checks if there are no files that can be browsed.
+func (browser *FileBrowser) IsEmpty() bool {
+	return len(browser.Filenames) == 0
+}

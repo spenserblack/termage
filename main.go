@@ -35,6 +35,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if browser.IsEmpty() {
+		log.Fatalf("No valid images found in %q", cmd.ImageFile)
+	}
 	var (
 		reader        *os.File
 		originalImage image.Image
