@@ -59,7 +59,9 @@ func main() {
 		format        string
 		title         string
 		// Modifiers for x and y coordinates of image
-		xMod, yMod int
+		xMod, yMod   int
+		runAnimation bool
+		canTransform bool = true
 	)
 
 	s, err := tcell.NewScreen()
@@ -137,8 +139,10 @@ func main() {
 			if err != nil {
 				break
 			}
+			canTransform = false
 			go func() {
-				for {
+				runAnimation = true
+				for runAnimation {
 					resizedImage = resizeImageToTerm(gifHelper.Current, s)
 					time.Sleep(gifHelper.Delay())
 					if err := gifHelper.NextFrame(); err != nil {
@@ -151,6 +155,7 @@ func main() {
 				}
 			}()
 		default:
+			canTransform = true
 			s.Clear()
 			drawTitle()
 			drawImage()
@@ -197,14 +202,19 @@ func main() {
 				case 'n':
 					browser.Forward()
 
+					runAnimation = false
 					loadImage()
 					draw()
 				case 'N':
 					browser.Back()
 
+					runAnimation = false
 					loadImage()
 					draw()
 				case 'z':
+					if !canTransform {
+						break
+					}
 					resizedImage = zoomImage(
 						originalImage,
 						10,
@@ -212,6 +222,9 @@ func main() {
 					)
 					draw()
 				case 'Z':
+					if !canTransform {
+						break
+					}
 					resizedImage = zoomImage(
 						originalImage,
 						-10,
@@ -219,15 +232,24 @@ func main() {
 					)
 					draw()
 				case 'f':
+					if !canTransform {
+						break
+					}
 					xMod = 0
 					yMod = 0
 					resizedImage = resizeImageToTerm(originalImage, s)
 					draw()
 				case 'h':
+					if !canTransform {
+						break
+					}
 					width, _ := s.Size()
 					shiftLeft(width, resizedImage.Bounds().Max.X)
 					draw()
 				case 'H':
+					if !canTransform {
+						break
+					}
 					width, _ := s.Size()
 					rightBound := resizedImage.Bounds().Max.X
 					for i := 0; i < rightBound/10; i++ {
@@ -235,10 +257,16 @@ func main() {
 					}
 					draw()
 				case 'j':
+					if !canTransform {
+						break
+					}
 					_, height := s.Size()
 					shiftDown(height, resizedImage.Bounds().Max.Y)
 					draw()
 				case 'J':
+					if !canTransform {
+						break
+					}
 					_, height := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.Y/10; i++ {
@@ -246,10 +274,16 @@ func main() {
 					}
 					draw()
 				case 'k':
+					if !canTransform {
+						break
+					}
 					_, height := s.Size()
 					shiftUp(height, resizedImage.Bounds().Max.Y)
 					draw()
 				case 'K':
+					if !canTransform {
+						break
+					}
 					_, height := s.Size()
 					bottomBound := resizedImage.Bounds().Max.Y
 					for i := 0; i < bottomBound/10; i++ {
@@ -257,10 +291,16 @@ func main() {
 					}
 					draw()
 				case 'l':
+					if !canTransform {
+						break
+					}
 					width, _ := s.Size()
 					shiftRight(width, resizedImage.Bounds().Max.X)
 					draw()
 				case 'L':
+					if !canTransform {
+						break
+					}
 					width, _ := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.X/10; i++ {
