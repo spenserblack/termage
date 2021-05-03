@@ -72,7 +72,8 @@ func main() {
 	loadImage := func() {
 		reader.Close()
 		currentFile := browser.Current()
-		reader, err := os.Open(currentFile)
+		err := error(nil)
+		reader, err = os.Open(currentFile)
 		if err != nil {
 			log.Fatal(err)
 		}
