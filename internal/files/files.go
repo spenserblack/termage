@@ -42,7 +42,7 @@ func NewFileBrowser(filename string, extensions map[string]struct{}) (browser Fi
 		return
 	}
 
-	for i, fpath := range matches {
+	for _, fpath := range matches {
 		// NOTE Skips if extension is not supported
 		if _, ok := extensions[strings.ToLower(filepath.Ext(fpath))]; !ok {
 			continue
@@ -59,7 +59,7 @@ func NewFileBrowser(filename string, extensions map[string]struct{}) (browser Fi
 			continue
 		}
 		if os.SameFile(currentFileStats, fileStats) {
-			browser.index = i
+			browser.index = len(browser.Filenames)
 		}
 		browser.Filenames = append(browser.Filenames, absFpath)
 	}
