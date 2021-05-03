@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/draw"
 	"image/gif"
+	"io"
 	"time"
 )
 
@@ -62,6 +63,17 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 		l,
 		0,
 	}
+	return
+}
+
+// HelperFromReader cretes a new GIF helper from a Reader.
+func HelperFromReader(r io.Reader) (helper Helper, err error) {
+	var g *gif.GIF
+	g, err = gif.DecodeAll(r)
+	if err != nil {
+		return
+	}
+	helper, err = NewHelper(g)
 	return
 }
 

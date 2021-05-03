@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"image"
-	"image/gif"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
@@ -18,7 +18,7 @@ import (
 	"github.com/spenserblack/termage/internal/files"
 	"github.com/spenserblack/termage/internal/helpers"
 	"github.com/spenserblack/termage/pkg/conversion"
-	tgif "github.com/spenserblack/termage/pkg/gif"
+	"github.com/spenserblack/termage/pkg/gif"
 )
 
 const titleBarPixels = 1
@@ -133,11 +133,7 @@ func main() {
 		switch format {
 		case "gif":
 			reader.Seek(0, 0)
-			g, err := gif.DecodeAll(reader)
-			if err != nil {
-				break
-			}
-			gifHelper, err := tgif.NewHelper(g)
+			gifHelper, err := gif.HelperFromReader(reader)
 			if err != nil {
 				break
 			}
