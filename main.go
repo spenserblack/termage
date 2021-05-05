@@ -80,6 +80,7 @@ func main() {
 		resizeAbs  chan image.Point = make(chan image.Point) // resize bounds
 		resizeRel  chan int         = make(chan int)         // percentage
 		shiftImg   chan Shift       = make(chan Shift)
+		resetImg   chan struct{}    = make(chan struct{})
 	)
 
 	s, err := tcell.NewScreen()
@@ -209,6 +210,11 @@ func main() {
 					resize.NearestNeighbor,
 				)
 				draw()
+			case <-resetImg:
+				xMod = 0
+				yMod = 0
+				resizedImage = resizeImageToTerm(i, s)
+				draw()
 			case shift := <-shiftImg:
 				width, height := s.Size()
 				height -= titleBarPixels
@@ -243,13 +249,7 @@ func main() {
 	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
-			width, height := s.Size()
-			if width < height {
-				height = 0
-			} else {
-				width = 0
-			}
-			resizeAbs <- image.Point{width, height - titleBarPixels}
+			resetImg <- struct{}{}
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
@@ -272,15 +272,7 @@ func main() {
 				case 'Z':
 					resizeRel <- -10
 				case 'f':
-					xMod = 0
-					yMod = 0
-					width, height := s.Size()
-					if width < height {
-						height = 0
-					} else {
-						width = 0
-					}
-					resizeAbs <- image.Point{width, height - titleBarPixels}
+					resetImg <- struct{}{}
 				case 'h':
 					shiftImg <- Shift{image.Point{-1, 0}, false}
 					redraw <- struct{}{}
