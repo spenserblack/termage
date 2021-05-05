@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/spenserblack/termage/actions/workflows/ci.yml/badge.svg)](https://github.com/spenserblack/termage/actions/workflows/ci.yml)
 
-Browse images in the terminal
+Browse images in the terminal *with support for animated GIFs :tada:*
 
 ## Controls
 
