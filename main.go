@@ -69,6 +69,9 @@ func main() {
 		xMod, yMod int
 		images     chan Image = make(chan Image, 1)
 		stop       chan quit
+		redraw     chan struct{}    = make(chan struct{}, 1)
+		resizeAbs  chan image.Point = make(chan image.Point) // resize bounds
+		resizeRel  chan int         = make(chan int)         // percentage
 	)
 
 	s, err := tcell.NewScreen()
@@ -196,20 +199,47 @@ func main() {
 
 	stop = loadImage()
 
-	var i Image
-	for {
-		select {
-		case newImage := <-images:
-			i = newImage
-			resizedImage = resizeImageToTerm(i, s)
-			title = i.title
-			draw()
-		default:
+	go func() {
+		i := <-images
+		for {
+			select {
+			case <-redraw:
+				draw()
+			case p := <-resizeAbs:
+				resizedImage = resize.Resize(
+					uint(p.X),
+					uint(p.Y),
+					i,
+					resize.NearestNeighbor,
+				)
+				draw()
+			case percent := <-resizeRel:
+				bounds := resizedImage.Bounds()
+				resizedImage = resize.Resize(
+					uint(bounds.Max.X+(bounds.Max.X*percent/100)),
+					uint(bounds.Max.Y+(bounds.Max.Y*percent/100)),
+					i,
+					resize.NearestNeighbor,
+				)
+				draw()
+			case newImage := <-images:
+				i = newImage
+				resizedImage = resizeImageToTerm(i, s)
+				title = i.title
+				draw()
+			}
 		}
+	}()
+	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
-			resizedImage = resizeImageToTerm(i, s)
-			draw()
+			width, height := s.Size()
+			if width < height {
+				height = 0
+			} else {
+				width = 0
+			}
+			resizeAbs <- image.Point{width, height - titleBarPixels}
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
@@ -228,68 +258,63 @@ func main() {
 
 					stop = loadImage()
 				case 'z':
-					resizedImage = zoomImage(
-						i,
-						10,
-						resizedImage.Bounds().Max,
-					)
-					draw()
+					resizeRel <- 10
 				case 'Z':
-					resizedImage = zoomImage(
-						i,
-						-10,
-						resizedImage.Bounds().Max,
-					)
-					draw()
+					resizeRel <- -10
 				case 'f':
 					xMod = 0
 					yMod = 0
-					resizedImage = resizeImageToTerm(i, s)
-					draw()
+					width, height := s.Size()
+					if width < height {
+						height = 0
+					} else {
+						width = 0
+					}
+					resizeAbs <- image.Point{width, height - titleBarPixels}
 				case 'h':
 					width, _ := s.Size()
 					shiftLeft(width, resizedImage.Bounds().Max.X)
-					draw()
+					redraw <- struct{}{}
 				case 'H':
 					width, _ := s.Size()
 					rightBound := resizedImage.Bounds().Max.X
 					for i := 0; i < rightBound/10; i++ {
 						shiftLeft(width, rightBound)
 					}
-					draw()
+					redraw <- struct{}{}
 				case 'j':
 					_, height := s.Size()
 					shiftDown(height, resizedImage.Bounds().Max.Y)
-					draw()
+					redraw <- struct{}{}
 				case 'J':
 					_, height := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.Y/10; i++ {
 						shiftDown(height, bounds.Max.Y)
 					}
-					draw()
+					redraw <- struct{}{}
 				case 'k':
 					_, height := s.Size()
 					shiftUp(height, resizedImage.Bounds().Max.Y)
-					draw()
+					redraw <- struct{}{}
 				case 'K':
 					_, height := s.Size()
 					bottomBound := resizedImage.Bounds().Max.Y
 					for i := 0; i < bottomBound/10; i++ {
 						shiftUp(height, bottomBound)
 					}
-					draw()
+					redraw <- struct{}{}
 				case 'l':
 					width, _ := s.Size()
 					shiftRight(width, resizedImage.Bounds().Max.X)
-					draw()
+					redraw <- struct{}{}
 				case 'L':
 					width, _ := s.Size()
 					bounds := resizedImage.Bounds()
 					for i := 0; i < bounds.Max.X/10; i++ {
 						shiftRight(width, bounds.Max.X)
 					}
-					draw()
+					redraw <- struct{}{}
 				}
 			}
 		}
@@ -303,17 +328,4 @@ func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
 	return resize.Resize(0, uint(height), i, resize.NearestNeighbor)
-}
-
-func zoomImage(
-	original image.Image,
-	percentage int,
-	maxBound image.Point,
-) image.Image {
-	return resize.Resize(
-		uint(maxBound.X+(maxBound.X*percentage/100)),
-		uint(maxBound.Y+(maxBound.Y*percentage/100)),
-		original,
-		resize.NearestNeighbor,
-	)
 }
