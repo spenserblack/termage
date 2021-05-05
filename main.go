@@ -30,6 +30,22 @@ var supportedExtensions = []string{
 	"gif",
 }
 
+// Image is a wrapper around image.Image with additional details.
+type Image struct {
+	image.Image
+	title  string
+	format string
+}
+
+// Shift is a wrapper around image.Point that specifies absolute shift
+// or relative.
+type Shift struct {
+	image.Point
+	relative bool
+}
+
+type quit = struct{}
+
 func main() {
 	cmd.Execute()
 
@@ -53,15 +69,18 @@ func main() {
 		log.Fatalf("No valid images found in %q", cmd.ImageFile)
 	}
 	var (
-		reader        *os.File
-		originalImage image.Image
-		resizedImage  image.Image
-		format        string
-		title         string
+		reader       *os.File
+		resizedImage image.Image
+		title        string
 		// Modifiers for x and y coordinates of image
-		xMod, yMod   int
-		runAnimation bool
-		canTransform bool = true
+		xMod, yMod int
+		images     chan Image = make(chan Image, 1)
+		stop       chan quit
+		redraw     chan struct{}    = make(chan struct{}, 1)
+		resizeAbs  chan image.Point = make(chan image.Point) // resize bounds
+		resizeRel  chan int         = make(chan int)         // percentage
+		shiftImg   chan Shift       = make(chan Shift)
+		resetImg   chan struct{}    = make(chan struct{})
 	)
 
 	s, err := tcell.NewScreen()
@@ -73,22 +92,50 @@ func main() {
 	}
 	s.SetStyle(tcell.StyleDefault)
 
-	loadImage := func() {
-		reader.Close()
+	// Can use a quit channel in case it's an animation
+	loadImage := func() chan quit {
+		stop := make(chan quit, 1)
 		currentFile := browser.Current()
 		err := error(nil)
 		reader, err = os.Open(currentFile)
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer reader.Close()
 
-		originalImage, format, err = image.Decode(reader)
+		originalImage, format, err := image.Decode(reader)
 		title = fmt.Sprintf("%v [%v]", filepath.Base(currentFile), format)
 
 		if err != nil {
 			log.Fatal(err)
 		}
-		resizedImage = resizeImageToTerm(originalImage, s)
+		images <- Image{originalImage, title, format}
+		if format == "gif" {
+			reader.Seek(0, 0)
+			gifHelper, err := gif.HelperFromReader(reader)
+			if err != nil {
+				return stop
+			}
+			go func() {
+				for {
+					select {
+					case <-stop:
+						return
+					default:
+						images <- Image{
+							gifHelper.Current,
+							title,
+							format,
+						}
+						time.Sleep(gifHelper.Delay())
+					}
+					if err := gifHelper.NextFrame(); err != nil {
+						return
+					}
+				}
+			}()
+		}
+		return stop
 	}
 
 	drawTitle := func() {
@@ -132,66 +179,77 @@ func main() {
 	}
 
 	draw := func() {
-		switch format {
-		case "gif":
-			reader.Seek(0, 0)
-			gifHelper, err := gif.HelperFromReader(reader)
-			if err != nil {
-				break
-			}
-			canTransform = false
-			go func() {
-				runAnimation = true
-				for runAnimation {
-					resizedImage = resizeImageToTerm(gifHelper.Current, s)
-					time.Sleep(gifHelper.Delay())
-					if err := gifHelper.NextFrame(); err != nil {
-						return
-					}
-					s.Clear()
-					drawTitle()
-					drawImage()
-					s.Show()
+		s.Clear()
+		drawTitle()
+		drawImage()
+		s.Show()
+	}
+
+	stop = loadImage()
+
+	go func() {
+		i := <-images
+		for {
+			select {
+			case <-redraw:
+				draw()
+			case p := <-resizeAbs:
+				resizedImage = resize.Resize(
+					uint(p.X),
+					uint(p.Y),
+					i,
+					resize.NearestNeighbor,
+				)
+				draw()
+			case percent := <-resizeRel:
+				bounds := resizedImage.Bounds()
+				resizedImage = resize.Resize(
+					uint(bounds.Max.X+(bounds.Max.X*percent/100)),
+					uint(bounds.Max.Y+(bounds.Max.Y*percent/100)),
+					i,
+					resize.NearestNeighbor,
+				)
+				draw()
+			case <-resetImg:
+				xMod = 0
+				yMod = 0
+				resizedImage = resizeImageToTerm(i, s)
+				draw()
+			case shift := <-shiftImg:
+				width, height := s.Size()
+				height -= titleBarPixels
+				bounds := resizedImage.Bounds()
+				x, y := shift.X, shift.Y
+				if shift.relative {
+					x = x * bounds.Max.X / 100
+					y = y * bounds.Max.Y / 100
 				}
-			}()
-		default:
-			canTransform = true
-			s.Clear()
-			drawTitle()
-			drawImage()
-			s.Show()
+				xMod += x
+				yMod += y
+				if xMod > (width-bounds.Max.X)/2 {
+					xMod = (width - bounds.Max.X) / 2
+				}
+				if xMod < (bounds.Max.X-width)/2 {
+					xMod = (bounds.Max.X - width) / 2
+				}
+				if yMod < (height-bounds.Max.Y)/2 {
+					yMod = (height - bounds.Max.Y) / 2
+				}
+				if yMod > (bounds.Max.Y-height)/2 {
+					yMod = (bounds.Max.Y - height) / 2
+				}
+			case newImage := <-images:
+				i = newImage
+				resizedImage = resizeImageToTerm(i, s)
+				title = i.title
+				draw()
+			}
 		}
-	}
-
-	shiftLeft := func(screenWidth, imageWidth int) {
-		if xMod > (screenWidth-imageWidth)/2 {
-			xMod--
-		}
-	}
-	shiftRight := func(screenWidth, imageWidth int) {
-		if xMod < (imageWidth-screenWidth)/2 {
-			xMod++
-		}
-	}
-	shiftUp := func(screenHeight, imageHeight int) {
-		if yMod > (screenHeight-imageHeight)/2 {
-			yMod--
-		}
-	}
-	shiftDown := func(screenHeight, imageHeight int) {
-		if yMod < (imageHeight-screenHeight)/2 {
-			yMod++
-		}
-	}
-
-	loadImage()
-	draw()
-
+	}()
 	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
-			resizedImage = resizeImageToTerm(originalImage, s)
-			draw()
+			resetImg <- struct{}{}
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
@@ -200,113 +258,45 @@ func main() {
 			case tcell.KeyRune:
 				switch ev.Rune() {
 				case 'n':
+					stop <- quit{}
 					browser.Forward()
 
-					runAnimation = false
-					loadImage()
-					draw()
+					stop = loadImage()
 				case 'N':
+					stop <- quit{}
 					browser.Back()
 
-					runAnimation = false
-					loadImage()
-					draw()
+					stop = loadImage()
 				case 'z':
-					if !canTransform {
-						break
-					}
-					resizedImage = zoomImage(
-						originalImage,
-						10,
-						resizedImage.Bounds().Max,
-					)
-					draw()
+					resizeRel <- 10
 				case 'Z':
-					if !canTransform {
-						break
-					}
-					resizedImage = zoomImage(
-						originalImage,
-						-10,
-						resizedImage.Bounds().Max,
-					)
-					draw()
+					resizeRel <- -10
 				case 'f':
-					if !canTransform {
-						break
-					}
-					xMod = 0
-					yMod = 0
-					resizedImage = resizeImageToTerm(originalImage, s)
-					draw()
+					resetImg <- struct{}{}
 				case 'h':
-					if !canTransform {
-						break
-					}
-					width, _ := s.Size()
-					shiftLeft(width, resizedImage.Bounds().Max.X)
-					draw()
+					shiftImg <- Shift{image.Point{-1, 0}, false}
+					redraw <- struct{}{}
 				case 'H':
-					if !canTransform {
-						break
-					}
-					width, _ := s.Size()
-					rightBound := resizedImage.Bounds().Max.X
-					for i := 0; i < rightBound/10; i++ {
-						shiftLeft(width, rightBound)
-					}
-					draw()
+					shiftImg <- Shift{image.Point{-10, 0}, true}
+					redraw <- struct{}{}
 				case 'j':
-					if !canTransform {
-						break
-					}
-					_, height := s.Size()
-					shiftDown(height, resizedImage.Bounds().Max.Y)
-					draw()
+					shiftImg <- Shift{image.Point{0, 1}, false}
+					redraw <- struct{}{}
 				case 'J':
-					if !canTransform {
-						break
-					}
-					_, height := s.Size()
-					bounds := resizedImage.Bounds()
-					for i := 0; i < bounds.Max.Y/10; i++ {
-						shiftDown(height, bounds.Max.Y)
-					}
-					draw()
+					shiftImg <- Shift{image.Point{0, 10}, true}
+					redraw <- struct{}{}
 				case 'k':
-					if !canTransform {
-						break
-					}
-					_, height := s.Size()
-					shiftUp(height, resizedImage.Bounds().Max.Y)
-					draw()
+					shiftImg <- Shift{image.Point{0, -1}, false}
+					redraw <- struct{}{}
 				case 'K':
-					if !canTransform {
-						break
-					}
-					_, height := s.Size()
-					bottomBound := resizedImage.Bounds().Max.Y
-					for i := 0; i < bottomBound/10; i++ {
-						shiftUp(height, bottomBound)
-					}
-					draw()
+					shiftImg <- Shift{image.Point{0, -10}, true}
+					redraw <- struct{}{}
 				case 'l':
-					if !canTransform {
-						break
-					}
-					width, _ := s.Size()
-					shiftRight(width, resizedImage.Bounds().Max.X)
-					draw()
+					shiftImg <- Shift{image.Point{1, 0}, false}
+					redraw <- struct{}{}
 				case 'L':
-					if !canTransform {
-						break
-					}
-					width, _ := s.Size()
-					bounds := resizedImage.Bounds()
-					for i := 0; i < bounds.Max.X/10; i++ {
-						shiftRight(width, bounds.Max.X)
-					}
-					draw()
+					shiftImg <- Shift{image.Point{10, 0}, true}
+					redraw <- struct{}{}
 				}
 			}
 		}
@@ -320,17 +310,4 @@ func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
 		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
 	}
 	return resize.Resize(0, uint(height), i, resize.NearestNeighbor)
-}
-
-func zoomImage(
-	original image.Image,
-	percentage int,
-	maxBound image.Point,
-) image.Image {
-	return resize.Resize(
-		uint(maxBound.X+(maxBound.X*percentage/100)),
-		uint(maxBound.Y+(maxBound.Y*percentage/100)),
-		original,
-		resize.NearestNeighbor,
-	)
 }
