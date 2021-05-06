@@ -8,8 +8,8 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 - `n`: Next image
 - `N`: Previous image
-- `z`: Zoom in
-- `Z`: Zoom out
+- `z`: Increase zoom by 10 percentiles
+- `Z`: Decrease zoom by 10 percentiles
 - `f`: Fit to screen
 - `h`: Scroll left one pixel
 - `H`: Scroll left 10%
