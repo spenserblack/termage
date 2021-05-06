@@ -1,6 +1,7 @@
 # termage
 
 [![CI](https://github.com/spenserblack/termage/actions/workflows/ci.yml/badge.svg)](https://github.com/spenserblack/termage/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/spenserblack/termage)](https://goreportcard.com/report/github.com/spenserblack/termage)
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
