@@ -46,6 +46,9 @@ type Shift struct {
 
 type quit = struct{}
 
+// Zoom is used to manage the zoom-level as a percentage.
+type Zoom uint
+
 func main() {
 	cmd.Execute()
 
@@ -74,14 +77,16 @@ func main() {
 		title        string
 		// Modifiers for x and y coordinates of image
 		xMod, yMod int
+		zoom       Zoom             = 100
 		images     chan Image       = make(chan Image, 1)
 		frames     chan image.Image = make(chan image.Image)
 		stop       chan quit
 		redraw     chan struct{}    = make(chan struct{}, 1)
 		resizeAbs  chan image.Point = make(chan image.Point) // resize bounds
-		resizeRel  chan int         = make(chan int)         // percentage
 		shiftImg   chan Shift       = make(chan Shift)
 		resetImg   chan struct{}    = make(chan struct{})
+		zoomIn     chan struct{}    = make(chan struct{})
+		zoomOut    chan struct{}    = make(chan struct{})
 	)
 
 	s, err := tcell.NewScreen()
@@ -198,19 +203,31 @@ func main() {
 					resize.NearestNeighbor,
 				)
 				draw()
-			case percent := <-resizeRel:
-				bounds := resizedImage.Bounds()
-				resizedImage = resize.Resize(
-					uint(bounds.Max.X+(bounds.Max.X*percent/100)),
-					uint(bounds.Max.Y+(bounds.Max.Y*percent/100)),
-					i,
-					resize.NearestNeighbor,
-				)
+			case <-zoomIn:
+				zoom += 10
+				resizedImage = zoom.TransImage(i)
+				draw()
+			case <-zoomOut:
+				if zoom < 10 {
+					zoom = 0
+				} else {
+					zoom -= 10
+				}
+				resizedImage = zoom.TransImage(i)
 				draw()
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
-				resizedImage = resizeImageToTerm(i, s)
+				maxWidth, maxHeight := s.Size()
+				if maxWidth < maxHeight {
+					zoom = Zoom(maxWidth * 100 / i.Bounds().Max.X)
+				} else {
+					zoom = Zoom(maxHeight * 100 / i.Bounds().Max.Y)
+				}
+				if zoom > 100 {
+					zoom = 100
+				}
+				resizedImage = zoom.TransImage(i)
 				draw()
 			case shift := <-shiftImg:
 				width, height := s.Size()
@@ -236,11 +253,20 @@ func main() {
 					yMod = (bounds.Max.Y - height) / 2
 				}
 			case nextFrame := <-frames:
-				resizedImage = resizeImageToTerm(nextFrame, s)
+				resizedImage = zoom.TransImage(nextFrame)
 				draw()
 			case newImage := <-images:
 				i = newImage
-				resizedImage = resizeImageToTerm(i, s)
+				maxWidth, maxHeight := s.Size()
+				if maxWidth < maxHeight {
+					zoom = Zoom(uint(maxWidth) * 100 / uint(i.Bounds().Max.X))
+				} else {
+					zoom = Zoom(uint(maxHeight) * 100 / uint(i.Bounds().Max.Y))
+				}
+				if zoom > 100 {
+					zoom = 100
+				}
+				resizedImage = zoom.TransImage(i)
 				title = i.title
 				draw()
 			}
@@ -268,9 +294,9 @@ func main() {
 
 					stop = loadImage()
 				case 'z':
-					resizeRel <- 10
+					zoomIn <- struct{}{}
 				case 'Z':
-					resizeRel <- -10
+					zoomOut <- struct{}{}
 				case 'f':
 					resetImg <- struct{}{}
 				case 'h':
@@ -303,11 +329,13 @@ func main() {
 	}
 }
 
-func resizeImageToTerm(i image.Image, s tcell.Screen) image.Image {
-	width, height := s.Size()
-	height -= titleBarPixels
-	if width < height {
-		return resize.Resize(uint(width), 0, i, resize.NearestNeighbor)
-	}
-	return resize.Resize(0, uint(height), i, resize.NearestNeighbor)
+// TransImage transforms an image by a zoom percentage.
+func (percentage Zoom) TransImage(i image.Image) image.Image {
+	bounds := i.Bounds()
+	return resize.Resize(
+		uint(bounds.Max.X)*uint(percentage)/100,
+		uint(bounds.Max.Y)*uint(percentage)/100,
+		i,
+		resize.NearestNeighbor,
+	)
 }
