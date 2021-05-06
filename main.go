@@ -208,8 +208,8 @@ func main() {
 				resizedImage = zoom.TransImage(i)
 				draw()
 			case <-zoomOut:
-				if zoom < 10 {
-					zoom = 0
+				if zoom < 11 {
+					zoom = 1
 				} else {
 					zoom -= 10
 				}
