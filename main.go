@@ -191,6 +191,7 @@ func main() {
 
 	go func() {
 		i := <-images
+		var fitZoom Zoom
 		for {
 			select {
 			case <-redraw:
@@ -204,7 +205,11 @@ func main() {
 				)
 				draw()
 			case <-zoomIn:
-				zoom += 10
+				if zoom < fitZoom && fitZoom < zoom+10 {
+					zoom = fitZoom
+				} else {
+					zoom += 10
+				}
 				resizedImage = zoom.TransImage(i)
 				draw()
 			case <-zoomOut:
@@ -229,6 +234,7 @@ func main() {
 				if zoom > 100 {
 					zoom = 100
 				}
+				fitZoom = zoom
 				resizedImage = zoom.TransImage(i)
 				draw()
 			case shift := <-shiftImg:
@@ -272,6 +278,7 @@ func main() {
 				if zoom > 100 {
 					zoom = 100
 				}
+				fitZoom = zoom
 				resizedImage = zoom.TransImage(i)
 				title = i.title
 				draw()
