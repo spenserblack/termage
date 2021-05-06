@@ -10,6 +10,34 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 go get -u github.com/spenserblack/termage
 ```
 
+## Usage
+
+### Help
+
+```bash
+termage --help
+```
+
+### Browse all images in a directory
+
+#### Starting from first image in directory
+
+```bash
+termage path/to/dir/
+```
+
+#### Starting from a specific image
+
+```bash
+termage path/to/dir/image
+```
+
+### Browse a specific subset of images
+
+```bash
+termage path/to/image1 path/to/image2 # ...
+```
+
 ## Controls
 
 - `n`: Next image
