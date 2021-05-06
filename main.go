@@ -74,7 +74,8 @@ func main() {
 		title        string
 		// Modifiers for x and y coordinates of image
 		xMod, yMod int
-		images     chan Image = make(chan Image, 1)
+		images     chan Image       = make(chan Image, 1)
+		frames     chan image.Image = make(chan image.Image)
 		stop       chan quit
 		redraw     chan struct{}    = make(chan struct{}, 1)
 		resizeAbs  chan image.Point = make(chan image.Point) // resize bounds
@@ -122,11 +123,7 @@ func main() {
 					case <-stop:
 						return
 					default:
-						images <- Image{
-							gifHelper.Current,
-							title,
-							format,
-						}
+						frames <- gifHelper.Current
 						time.Sleep(gifHelper.Delay())
 					}
 					if err := gifHelper.NextFrame(); err != nil {
@@ -238,6 +235,9 @@ func main() {
 				if yMod > (bounds.Max.Y-height)/2 {
 					yMod = (bounds.Max.Y - height) / 2
 				}
+			case nextFrame := <-frames:
+				resizedImage = resizeImageToTerm(nextFrame, s)
+				draw()
 			case newImage := <-images:
 				i = newImage
 				resizedImage = resizeImageToTerm(i, s)
