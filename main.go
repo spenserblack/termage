@@ -213,6 +213,8 @@ func main() {
 				} else {
 					zoom -= 10
 				}
+				xMod /= 10
+				yMod /= 10
 				resizedImage = zoom.TransImage(i)
 				draw()
 			case <-resetImg:
