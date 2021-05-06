@@ -4,6 +4,12 @@
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
+## Installation
+
+```bash
+go get -u github.com/spenserblack/termage
+```
+
 ## Controls
 
 - `n`: Next image
