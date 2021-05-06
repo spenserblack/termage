@@ -238,19 +238,23 @@ func main() {
 					x = x * bounds.Max.X / 100
 					y = y * bounds.Max.Y / 100
 				}
-				xMod += x
-				yMod += y
-				if xMod > (width-bounds.Max.X)/2 {
-					xMod = (width - bounds.Max.X) / 2
+				if bounds.Max.X > width {
+					xMod += x
+					if xMod < (width-bounds.Max.X)/2 {
+						xMod = (width - bounds.Max.X) / 2
+					}
+					if xMod > (bounds.Max.X-width)/2 {
+						xMod = (bounds.Max.X - width) / 2
+					}
 				}
-				if xMod < (bounds.Max.X-width)/2 {
-					xMod = (bounds.Max.X - width) / 2
-				}
-				if yMod < (height-bounds.Max.Y)/2 {
-					yMod = (height - bounds.Max.Y) / 2
-				}
-				if yMod > (bounds.Max.Y-height)/2 {
-					yMod = (bounds.Max.Y - height) / 2
+				if bounds.Max.Y > height {
+					yMod += y
+					if yMod < (height-bounds.Max.Y)/2 {
+						yMod = (height - bounds.Max.Y) / 2
+					}
+					if yMod > (bounds.Max.Y-height)/2 {
+						yMod = (bounds.Max.Y - height) / 2
+					}
 				}
 			case nextFrame := <-frames:
 				resizedImage = zoom.TransImage(nextFrame)
