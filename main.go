@@ -226,10 +226,10 @@ func main() {
 				}
 				xMod += x
 				yMod += y
-				if xMod > (width-bounds.Max.X)/2 {
+				if xMod < (width-bounds.Max.X)/2 {
 					xMod = (width - bounds.Max.X) / 2
 				}
-				if xMod < (bounds.Max.X-width)/2 {
+				if xMod > (bounds.Max.X-width)/2 {
 					xMod = (bounds.Max.X - width) / 2
 				}
 				if yMod < (height-bounds.Max.Y)/2 {
