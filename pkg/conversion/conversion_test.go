@@ -14,11 +14,11 @@ func (c FakeColor) RGBA() (r, g, b, a uint32) {
 // expected rune when executing RGBRuneFromColor.
 func TestAlphaToRune(t *testing.T) {
 	for i, alpha := range [len(AlphaChars)]uint32{
-		^uint32(0) - 1,
-		4*(^uint32(0)/5) - 1,
-		3*(^uint32(0)/5) - 1,
-		2*(^uint32(0)/5) - 1,
-		(^uint32(0) / 5) - 1,
+		(0xFFFF / 5) - 1,
+		2*(0xFFFF/5) - 1,
+		3*(0xFFFF/5) - 1,
+		4*(0xFFFF/5) - 1,
+		0xFFFF - 1,
 	} {
 		expected := AlphaChars[i]
 		actual := RGBRuneFromColor(FakeColor(alpha)).Rune
