@@ -102,7 +102,7 @@ func main() {
 	loadImage := func() chan quit {
 		stop := make(chan quit, 1)
 		currentFile := browser.Current()
-		err := error(nil)
+		var err error
 		reader, err = os.Open(currentFile)
 		if err != nil {
 			log.Fatal(err)
