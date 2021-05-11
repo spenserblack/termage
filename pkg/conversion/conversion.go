@@ -31,9 +31,11 @@ type RGBRunes struct {
 func RGBRuneFromColor(c color.Color) RGBRune {
 	r, g, b, a := c.RGBA()
 
-	a = ^a
+	// NOTE Shift to 16-bits to make more predictable
+	for ; a > 0xFFFF; a = a >> 8 {
+	}
 
-	alphaIndex := int(a / (^uint32(0) / uint32(len(AlphaChars))))
+	alphaIndex := int(a) / (0xFFFF / len(AlphaChars))
 	if alphaIndex == 5 {
 		alphaIndex = 4
 	}
