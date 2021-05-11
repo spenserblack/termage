@@ -35,6 +35,7 @@ If multiple files are passed, then you will browse specifically those files.`,
 	}
 )
 
+// Execute runs this project's CLI.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
