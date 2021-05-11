@@ -3,14 +3,18 @@ package gif
 import (
 	"errors"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/gif"
 	"io"
 	"time"
 )
 
-// ErrAnimationComplete signifies that the animation should not continue.
-var ErrAnimationComplete = errors.New("Animation is complete")
+var (
+	// ErrAnimationComplete signifies that the animation should not continue.
+	ErrAnimationComplete = errors.New("Animation is complete")
+	alpha                = color.RGBA{0, 0, 0, 0}
+)
 
 type frame struct {
 	*image.Paletted
@@ -20,8 +24,6 @@ type frame struct {
 
 // Helper simplifies interacting with an animated GIF.
 type Helper struct {
-	// Current is the image representing the current state of the animation.
-	Current   draw.Image
 	frames    []frame
 	loopCount looper
 	index     int
@@ -58,7 +60,6 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 	}
 
 	helper = Helper{
-		frames[0],
 		frames,
 		l,
 		0,
@@ -93,16 +94,20 @@ func (h *Helper) NextFrame() error {
 			return err
 		}
 		h.index = 0
-		h.Current = h.frames[0]
 		return nil
 	}
-	draw.Over.Draw(
-		h.Current,
-		h.Current.Bounds(),
-		h.frames[h.index],
-		image.Point{},
-	)
 	return nil
+}
+
+// CurrentImage is the image representing the current state of the animation.
+func (h Helper) CurrentImage() draw.Image {
+	im := image.NewRGBA(h.frames[0].Bounds())
+	alpha := color.RGBA{0, 0, 0, 255}
+	draw.Src.Draw(im, im.Bounds(), &image.Uniform{alpha}, image.Point{})
+	for i := 0; i <= h.index; i++ {
+		draw.Over.Draw(im, im.Bounds(), h.frames[i], image.Point{})
+	}
+	return im
 }
 
 // Looper is a helper to determine if looping should continue.

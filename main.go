@@ -128,7 +128,7 @@ func main() {
 					case <-stop:
 						return
 					default:
-						frames <- gifHelper.Current
+						frames <- gifHelper.CurrentImage()
 						time.Sleep(gifHelper.Delay())
 					}
 					if err := gifHelper.NextFrame(); err != nil {
