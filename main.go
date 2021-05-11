@@ -265,6 +265,7 @@ func main() {
 					}
 				}
 			case nextFrame := <-frames:
+				i.Image = nextFrame
 				resizedImage = zoom.TransImage(nextFrame)
 				draw()
 			case newImage := <-images:
