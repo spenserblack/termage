@@ -55,3 +55,9 @@ termage path/to/image1 path/to/image2 # ...
 - `l`: Scroll right one pixel
 - `L`: Scroll right 10%
 - `Esc`: Exit application (you may need to press twice due to an upstream issue)
+
+## Supported Formats
+
+- PNG
+- JPEG
+- GIF
