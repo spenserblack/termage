@@ -115,13 +115,14 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		images <- Image{originalImage, title, format}
 		if format == "gif" {
 			reader.Seek(0, 0)
 			gifHelper, err := gif.HelperFromReader(reader)
 			if err != nil {
+				images <- Image{originalImage, title, format}
 				return stop
 			}
+			images <- Image{&gifHelper, title, format}
 			go func() {
 				for {
 					select {
@@ -136,6 +137,8 @@ func main() {
 					}
 				}
 			}()
+		} else {
+			images <- Image{originalImage, title, format}
 		}
 		return stop
 	}
@@ -265,7 +268,6 @@ func main() {
 					}
 				}
 			case nextFrame := <-frames:
-				i.Image = nextFrame
 				resizedImage = zoom.TransImage(nextFrame)
 				draw()
 			case newImage := <-images:
