@@ -21,7 +21,10 @@ import (
 	"github.com/spenserblack/termage/pkg/gif"
 )
 
-const titleBarPixels = 1
+const (
+	titleBarPixels         = 1
+	pixelHeight    float32 = 2.15
+)
 
 var supportedExtensions = []string{
 	"jpeg",
@@ -229,6 +232,7 @@ func main() {
 				xMod = 0
 				yMod = 0
 				maxWidth, maxHeight := s.Size()
+				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
 					zoom = Zoom(maxWidth * 100 / i.Bounds().Max.X)
 				} else {
@@ -273,6 +277,7 @@ func main() {
 			case newImage := <-images:
 				i = newImage
 				maxWidth, maxHeight := s.Size()
+				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
 					zoom = Zoom(uint(maxWidth) * 100 / uint(i.Bounds().Max.X))
 				} else {
@@ -348,8 +353,10 @@ func main() {
 // TransImage transforms an image by a zoom percentage.
 func (percentage Zoom) TransImage(i image.Image) image.Image {
 	bounds := i.Bounds()
+	// NOTE Adjusts width of "pixels" to match height
+	width := float32(bounds.Max.X) * pixelHeight
 	return resize.Resize(
-		uint(bounds.Max.X)*uint(percentage)/100,
+		uint(width)*uint(percentage)/100,
 		uint(bounds.Max.Y)*uint(percentage)/100,
 		i,
 		resize.NearestNeighbor,
