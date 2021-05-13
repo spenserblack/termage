@@ -9,6 +9,8 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 ```bash
 go get -u github.com/spenserblack/termage
+# or
+go install github.com/spenserblack/termage@latest
 ```
 
 ## Usage
