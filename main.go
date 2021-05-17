@@ -16,7 +16,6 @@ import (
 
 	"github.com/spenserblack/termage/cmd"
 	"github.com/spenserblack/termage/internal/files"
-	"github.com/spenserblack/termage/internal/helpers"
 	"github.com/spenserblack/termage/pkg/conversion"
 	"github.com/spenserblack/termage/pkg/gif"
 )
@@ -168,12 +167,7 @@ func main() {
 					continue
 				}
 				rgbRune := rgbRunes.At(x, y)
-				runeColor := tcell.NewRGBColor(
-					// NOTE Takes 32-bit int, but requires range 0-255
-					int32(helpers.BitshiftTo8Bit(rgbRune.R>>8)),
-					int32(helpers.BitshiftTo8Bit(rgbRune.G>>8)),
-					int32(helpers.BitshiftTo8Bit(rgbRune.B>>8)),
-				)
+				runeColor := tcell.FromImageColor(rgbRune)
 				runeStyle := tcell.StyleDefault.Foreground(runeColor)
 				s.SetContent(
 					(xOrigin-width/2)+(x+xMod),
