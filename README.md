@@ -56,7 +56,7 @@ termage path/to/image1 path/to/image2 # ...
 - `K`: Scroll up 10%
 - `l`: Scroll right one pixel
 - `L`: Scroll right 10%
-- `Esc`: Exit application (you may need to press twice due to an upstream issue)
+- `Esc`: Exit application
 
 ## Supported Formats
 
