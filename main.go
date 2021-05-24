@@ -83,12 +83,11 @@ func main() {
 		images     chan Image       = make(chan Image, 1)
 		frames     chan image.Image = make(chan image.Image)
 		stop       chan quit
-		redraw     chan struct{}    = make(chan struct{}, 1)
-		resizeAbs  chan image.Point = make(chan image.Point) // resize bounds
-		shiftImg   chan Shift       = make(chan Shift)
-		resetImg   chan struct{}    = make(chan struct{})
-		zoomIn     chan struct{}    = make(chan struct{})
-		zoomOut    chan struct{}    = make(chan struct{})
+		redraw     chan struct{} = make(chan struct{}, 1)
+		shiftImg   chan Shift    = make(chan Shift)
+		resetImg   chan struct{} = make(chan struct{})
+		zoomIn     chan struct{} = make(chan struct{})
+		zoomOut    chan struct{} = make(chan struct{})
 	)
 
 	s, err := tcell.NewScreen()
@@ -195,14 +194,6 @@ func main() {
 		for {
 			select {
 			case <-redraw:
-				draw()
-			case p := <-resizeAbs:
-				resizedImage = resize.Resize(
-					uint(p.X),
-					uint(p.Y),
-					i,
-					resize.NearestNeighbor,
-				)
 				draw()
 			case <-zoomIn:
 				if zoom < fitZoom && fitZoom < zoom+10 {
