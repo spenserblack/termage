@@ -13,7 +13,7 @@ func (h *Helper) ColorModel() color.Model {
 
 // Bounds returns the bounds of the background/first frame of the GIF.
 func (h *Helper) Bounds() image.Rectangle {
-	return h.frames[0].Bounds()
+	return h.Frames[0].Bounds()
 }
 
 // At returns the color of the pixel at (x, y) at the current state of
