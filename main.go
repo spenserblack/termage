@@ -160,11 +160,22 @@ func main() {
 		var fitZoom, currentZoom Zoom
 		title := <-titleChan
 		currentImage := <-images
-		var resizedImage image.Image
 		stopAnimation := make(chan struct{}, 1)
 		var nextFrame chan conversion.RGBRunes
 		var zoomChan chan Zoom
 		var rgbRunes conversion.RGBRunes
+		maxWidth, maxHeight := s.Size()
+		maxWidth = int(float32(maxWidth) / pixelHeight)
+		if maxWidth < maxHeight {
+			currentZoom = Zoom(uint(maxWidth) * 100 / uint(currentImage.Bounds().Max.X))
+		} else {
+			currentZoom = Zoom(uint(maxHeight) * 100 / uint(currentImage.Bounds().Max.Y))
+		}
+		if currentZoom > 100 {
+			currentZoom = 100
+		}
+		fitZoom = currentZoom
+		resizedImage := currentZoom.TransImage(currentImage)
 		if g, ok := currentImage.(*gif.Helper); ok {
 			nextFrame = make(chan conversion.RGBRunes)
 			zoomChan = make(chan Zoom)
@@ -187,6 +198,7 @@ func main() {
 					currentZoom = 100
 				}
 				fitZoom = currentZoom
+				resizedImage = currentZoom.TransImage(currentImage)
 				if g, ok := currentImage.(*gif.Helper); ok {
 					nextFrame = make(chan conversion.RGBRunes)
 					zoomChan = make(chan Zoom)
@@ -194,7 +206,6 @@ func main() {
 					zoomChan <- currentZoom
 					continue
 				}
-				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				draw(title, rgbRunes)
 			case title = <-titleChan:
