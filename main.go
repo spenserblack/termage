@@ -124,7 +124,7 @@ func main() {
 		}
 	}
 
-	drawImage := func(rgbRunes *conversion.RGBRunes) {
+	drawImage := func(rgbRunes conversion.RGBRunes) {
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		screenWidth, screenHeight := s.Size()
 		xOrigin := screenWidth / 2
@@ -148,7 +148,7 @@ func main() {
 		}
 	}
 
-	draw := func(title string, rgbRunes *conversion.RGBRunes) {
+	draw := func(title string, rgbRunes conversion.RGBRunes) {
 		s.Clear()
 		drawTitle(title)
 		drawImage(rgbRunes)
@@ -162,7 +162,7 @@ func main() {
 		currentImage := <-images
 		var resizedImage image.Image
 		stopAnimation := make(chan struct{}, 1)
-		var nextFrame chan *conversion.RGBRunes
+		var nextFrame chan conversion.RGBRunes
 		var zoomChan chan Zoom
 		var rgbRunes conversion.RGBRunes
 		for {
@@ -182,7 +182,7 @@ func main() {
 				}
 				fitZoom = currentZoom
 				if g, ok := currentImage.(*gif.Helper); ok {
-					nextFrame = make(chan *conversion.RGBRunes)
+					nextFrame = make(chan conversion.RGBRunes)
 					zoomChan = make(chan Zoom)
 					go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
 					zoomChan <- currentZoom
@@ -190,10 +190,10 @@ func main() {
 				}
 				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
-				draw(title, &rgbRunes)
+				draw(title, rgbRunes)
 			case title = <-titleChan:
 			case <-redraw:
-				draw(title, &rgbRunes)
+				draw(title, rgbRunes)
 			case <-zoomIn:
 				if currentZoom < fitZoom && fitZoom < currentZoom+10 {
 					currentZoom = fitZoom
@@ -206,7 +206,7 @@ func main() {
 				}
 				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
-				draw(title, &rgbRunes)
+				draw(title, rgbRunes)
 			case <-zoomOut:
 				if currentZoom < 11 {
 					currentZoom = 1
@@ -221,7 +221,7 @@ func main() {
 				}
 				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
-				draw(title, &rgbRunes)
+				draw(title, rgbRunes)
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
@@ -242,7 +242,7 @@ func main() {
 				}
 				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
-				draw(title, &rgbRunes)
+				draw(title, rgbRunes)
 			case shift := <-shiftImg:
 				width, height := s.Size()
 				height -= titleBarPixels
@@ -272,7 +272,7 @@ func main() {
 				}
 			case frame := <-nextFrame:
 				draw(title, frame)
-				rgbRunes = *frame
+				rgbRunes = frame
 			}
 		}
 	}()
@@ -345,18 +345,17 @@ func (percentage Zoom) TransImage(i image.Image) image.Image {
 }
 
 // AnimateGif is a helper to fire off animation events at the correct time.
-func AnimateGif(g *gif.Helper, nextFrame chan *conversion.RGBRunes, stop chan struct{}, zoomChan chan Zoom) {
+func AnimateGif(g *gif.Helper, nextFrame chan conversion.RGBRunes, stop chan struct{}, zoomChan chan Zoom) {
 	defer close(nextFrame)
 	defer close(stop)
 	defer close(zoomChan)
 	index := 0
 	max := len(g.Frames)
-	frames := make([]*conversion.RGBRunes, max, max)
+	frames := make([]conversion.RGBRunes, max, max)
 	zoom := <-zoomChan
 	for i, v := range g.Frames {
 		zoomedImage := zoom.TransImage(v)
-		frame := conversion.RGBRunesFromImage(zoomedImage)
-		frames[i] = &frame
+		frames[i] = conversion.RGBRunesFromImage(zoomedImage)
 	}
 	for {
 		select {
@@ -365,8 +364,7 @@ func AnimateGif(g *gif.Helper, nextFrame chan *conversion.RGBRunes, stop chan st
 		case zoom = <-zoomChan:
 			for i, v := range g.Frames {
 				zoomedImage := zoom.TransImage(v)
-				frame := conversion.RGBRunesFromImage(zoomedImage)
-				frames[i] = &frame
+				frames[i] = conversion.RGBRunesFromImage(zoomedImage)
 			}
 		default:
 			nextFrame <- frames[index]
