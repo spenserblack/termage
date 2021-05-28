@@ -217,11 +217,11 @@ func main() {
 				} else {
 					currentZoom += 10
 				}
+				resizedImage = currentZoom.TransImage(currentImage)
 				if _, ok := currentImage.(*gif.Helper); ok {
 					zoomChan <- currentZoom
 					continue
 				}
-				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				draw(title, rgbRunes)
 			case <-zoomOut:
@@ -232,11 +232,11 @@ func main() {
 				}
 				xMod /= 10
 				yMod /= 10
+				resizedImage = currentZoom.TransImage(currentImage)
 				if _, ok := currentImage.(*gif.Helper); ok {
 					zoomChan <- currentZoom
 					continue
 				}
-				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				draw(title, rgbRunes)
 			case <-resetImg:
@@ -253,11 +253,11 @@ func main() {
 					currentZoom = 100
 				}
 				fitZoom = currentZoom
+				resizedImage = currentZoom.TransImage(currentImage)
 				if _, ok := currentImage.(*gif.Helper); ok {
 					zoomChan <- currentZoom
 					continue
 				}
-				resizedImage = currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				draw(title, rgbRunes)
 			case shift := <-shiftImg:
