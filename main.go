@@ -32,13 +32,6 @@ var supportedExtensions = []string{
 	"gif",
 }
 
-// Image is a wrapper around image.Image with additional details.
-type Image struct {
-	image.Image
-	title  string
-	format string
-}
-
 // Shift is a wrapper around image.Point that specifies absolute shift
 // or relative.
 type Shift struct {
@@ -76,12 +69,12 @@ func main() {
 	var (
 		reader       *os.File
 		resizedImage image.Image
-		title        string
 		// Modifiers for x and y coordinates of image
 		xMod, yMod int
 		zoom       Zoom             = 100
-		images     chan Image       = make(chan Image, 1)
+		images     chan image.Image = make(chan image.Image, 1)
 		frames     chan image.Image = make(chan image.Image)
+		titleChan  chan string      = make(chan string, 1)
 		stop       chan quit
 		redraw     chan struct{} = make(chan struct{}, 1)
 		shiftImg   chan Shift    = make(chan Shift)
@@ -111,7 +104,7 @@ func main() {
 		defer reader.Close()
 
 		originalImage, format, err := image.Decode(reader)
-		title = fmt.Sprintf("%v [%v]", filepath.Base(currentFile), format)
+		titleChan <- fmt.Sprintf("%v [%v]", filepath.Base(currentFile), format)
 
 		if err != nil {
 			log.Fatal(err)
@@ -120,10 +113,10 @@ func main() {
 			reader.Seek(0, 0)
 			gifHelper, err := gif.HelperFromReader(reader)
 			if err != nil {
-				images <- Image{originalImage, title, format}
+				images <- originalImage
 				return stop
 			}
-			images <- Image{&gifHelper, title, format}
+			images <- &gifHelper
 			go func() {
 				for {
 					select {
@@ -139,12 +132,12 @@ func main() {
 				}
 			}()
 		} else {
-			images <- Image{originalImage, title, format}
+			images <- originalImage
 		}
 		return stop
 	}
 
-	drawTitle := func() {
+	drawTitle := func(title string) {
 		runes := []rune(title)
 		width, _ := s.Size()
 		center := width / 2
@@ -179,9 +172,9 @@ func main() {
 		}
 	}
 
-	draw := func() {
+	draw := func(title string) {
 		s.Clear()
-		drawTitle()
+		drawTitle(title)
 		drawImage()
 		s.Show()
 	}
@@ -191,10 +184,11 @@ func main() {
 	go func() {
 		i := <-images
 		var fitZoom Zoom
+		var title string
 		for {
 			select {
 			case <-redraw:
-				draw()
+				draw(title)
 			case <-zoomIn:
 				if zoom < fitZoom && fitZoom < zoom+10 {
 					zoom = fitZoom
@@ -202,7 +196,7 @@ func main() {
 					zoom += 10
 				}
 				resizedImage = zoom.TransImage(i)
-				draw()
+				draw(title)
 			case <-zoomOut:
 				if zoom < 11 {
 					zoom = 1
@@ -212,7 +206,7 @@ func main() {
 				xMod /= 10
 				yMod /= 10
 				resizedImage = zoom.TransImage(i)
-				draw()
+				draw(title)
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
@@ -228,7 +222,7 @@ func main() {
 				}
 				fitZoom = zoom
 				resizedImage = zoom.TransImage(i)
-				draw()
+				draw(title)
 			case shift := <-shiftImg:
 				width, height := s.Size()
 				height -= titleBarPixels
@@ -258,7 +252,7 @@ func main() {
 				}
 			case nextFrame := <-frames:
 				resizedImage = zoom.TransImage(nextFrame)
-				draw()
+				draw(title)
 			case newImage := <-images:
 				i = newImage
 				maxWidth, maxHeight := s.Size()
@@ -273,8 +267,8 @@ func main() {
 				}
 				fitZoom = zoom
 				resizedImage = zoom.TransImage(i)
-				title = i.title
-				draw()
+				draw(title)
+			case title = <-titleChan:
 			}
 		}
 	}()
