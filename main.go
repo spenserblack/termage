@@ -352,9 +352,6 @@ func (percentage Zoom) TransImage(i image.Image) image.Image {
 
 // AnimateGif is a helper to fire off animation events at the correct time.
 func AnimateGif(g *gif.Helper, nextFrame chan conversion.RGBRunes, stop chan struct{}, zoomChan chan Zoom) {
-	defer close(nextFrame)
-	defer close(stop)
-	defer close(zoomChan)
 	index := 0
 	max := len(g.Frames)
 	frames := make([]conversion.RGBRunes, max, max)
