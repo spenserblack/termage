@@ -165,6 +165,12 @@ func main() {
 		var nextFrame chan conversion.RGBRunes
 		var zoomChan chan Zoom
 		var rgbRunes conversion.RGBRunes
+		if g, ok := currentImage.(*gif.Helper); ok {
+			nextFrame = make(chan conversion.RGBRunes)
+			zoomChan = make(chan Zoom)
+			go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
+			zoomChan <- currentZoom
+		}
 		for {
 			select {
 			case currentImage = <-images:
