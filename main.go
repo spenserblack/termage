@@ -164,6 +164,7 @@ func main() {
 		var nextFrame chan conversion.RGBRunes
 		var zoomChan chan Zoom
 		var rgbRunes conversion.RGBRunes
+		var currentWidth, currentHeight int
 		maxWidth, maxHeight := s.Size()
 		maxWidth = int(float32(maxWidth) / pixelHeight)
 		if maxWidth < maxHeight {
@@ -175,7 +176,6 @@ func main() {
 			currentZoom = 100
 		}
 		fitZoom = currentZoom
-		resizedImage := currentZoom.TransImage(currentImage)
 		if g, ok := currentImage.(*gif.Helper); ok {
 			nextFrame = make(chan conversion.RGBRunes)
 			zoomChan = make(chan Zoom)
@@ -198,7 +198,6 @@ func main() {
 					currentZoom = 100
 				}
 				fitZoom = currentZoom
-				resizedImage = currentZoom.TransImage(currentImage)
 				if g, ok := currentImage.(*gif.Helper); ok {
 					nextFrame = make(chan conversion.RGBRunes)
 					zoomChan = make(chan Zoom)
@@ -206,7 +205,9 @@ func main() {
 					zoomChan <- currentZoom
 					continue
 				}
+				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
+				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 				draw(title, rgbRunes)
 			case title = <-titleChan:
 			case <-redraw:
@@ -217,12 +218,13 @@ func main() {
 				} else {
 					currentZoom += 10
 				}
-				resizedImage = currentZoom.TransImage(currentImage)
 				if _, ok := currentImage.(*gif.Helper); ok {
 					zoomChan <- currentZoom
 					continue
 				}
+				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
+				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 				draw(title, rgbRunes)
 			case <-zoomOut:
 				if currentZoom < 11 {
@@ -232,12 +234,13 @@ func main() {
 				}
 				xMod /= 10
 				yMod /= 10
-				resizedImage = currentZoom.TransImage(currentImage)
 				if _, ok := currentImage.(*gif.Helper); ok {
 					zoomChan <- currentZoom
 					continue
 				}
+				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
+				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 				draw(title, rgbRunes)
 			case <-resetImg:
 				xMod = 0
@@ -253,43 +256,44 @@ func main() {
 					currentZoom = 100
 				}
 				fitZoom = currentZoom
-				resizedImage = currentZoom.TransImage(currentImage)
 				if _, ok := currentImage.(*gif.Helper); ok {
 					zoomChan <- currentZoom
 					continue
 				}
+				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
+				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 				draw(title, rgbRunes)
 			case shift := <-shiftImg:
 				width, height := s.Size()
 				height -= titleBarPixels
-				bounds := resizedImage.Bounds()
 				x, y := shift.X, shift.Y
 				if shift.relative {
-					x = x * bounds.Max.X / 100
-					y = y * bounds.Max.Y / 100
+					x = x * currentWidth / 100
+					y = y * currentHeight / 100
 				}
-				if bounds.Max.X > width {
+				if currentWidth > width {
 					xMod += x
-					if xMod < (width-bounds.Max.X)/2 {
-						xMod = (width - bounds.Max.X) / 2
+					if xMod < (width-currentWidth)/2 {
+						xMod = (width - currentWidth) / 2
 					}
-					if xMod > (bounds.Max.X-width)/2 {
-						xMod = (bounds.Max.X - width) / 2
+					if xMod > (currentWidth-width)/2 {
+						xMod = (currentWidth - width) / 2
 					}
 				}
-				if bounds.Max.Y > height {
+				if currentHeight > height {
 					yMod += y
-					if yMod < (height-bounds.Max.Y)/2 {
-						yMod = (height - bounds.Max.Y) / 2
+					if yMod < (height-currentHeight)/2 {
+						yMod = (height - currentHeight) / 2
 					}
-					if yMod > (bounds.Max.Y-height)/2 {
-						yMod = (bounds.Max.Y - height) / 2
+					if yMod > (currentHeight-height)/2 {
+						yMod = (currentHeight - height) / 2
 					}
 				}
 			case frame := <-nextFrame:
 				draw(title, frame)
 				rgbRunes = frame
+				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 			}
 		}
 	}()
