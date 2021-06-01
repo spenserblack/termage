@@ -16,7 +16,9 @@ var (
 	alpha                = color.RGBA{0, 0, 0, 0}
 )
 
-type frame struct {
+// Frame is a helper struct to group together GIF frame info, which is stored
+// in 3 separate slices by the standard library.
+type Frame struct {
 	image.Image
 	delay          int
 	disposalMethod byte
@@ -24,7 +26,8 @@ type frame struct {
 
 // Helper simplifies interacting with an animated GIF.
 type Helper struct {
-	frames    []frame
+	// Frames is the group of frames composing the GIF.
+	Frames    []Frame
 	loopCount looper
 	index     int
 	cache     gifCache
@@ -51,8 +54,8 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 	if len(g.Disposal) < len(g.Image) {
 		return helper, errors.New("Not enough disposals")
 	}
-	frames := make([]frame, 1, len(g.Image))
-	frames[0] = frame{g.Image[0], g.Delay[0], g.Disposal[0]}
+	frames := make([]Frame, 1, len(g.Image))
+	frames[0] = Frame{g.Image[0], g.Delay[0], g.Disposal[0]}
 	for i, v := range g.Image {
 		prevFrame := frames[len(frames)-1]
 		nextFrame := image.NewRGBA(prevFrame.Bounds())
@@ -63,7 +66,7 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 			image.Point{},
 		)
 		draw.Over.Draw(nextFrame, nextFrame.Bounds(), v, image.Point{})
-		frames = append(frames, frame{
+		frames = append(frames, Frame{
 			nextFrame,
 			g.Delay[i],
 			g.Disposal[i],
@@ -102,7 +105,7 @@ func HelperFromReader(r io.Reader) (helper Helper, err error) {
 
 // Delay returns the delay of the current frame.
 func (h Helper) Delay() time.Duration {
-	return time.Duration(h.frames[h.index].delay) * (time.Second / 100)
+	return time.Duration(h.Frames[h.index].delay) * (time.Second / 100)
 }
 
 // NextFrame moves along to the next frame and generates a new current image.
@@ -111,7 +114,7 @@ func (h Helper) Delay() time.Duration {
 // does not need to be generated.
 func (h *Helper) NextFrame() error {
 	h.index++
-	if h.index >= len(h.frames) {
+	if h.index >= len(h.Frames) {
 		if err := h.loopCount.nextLoop(); err != nil {
 			return err
 		}
@@ -123,7 +126,7 @@ func (h *Helper) NextFrame() error {
 
 // CurrentImage is the image representing the current state of the animation.
 func (h *Helper) CurrentImage() image.Image {
-	return h.frames[h.index]
+	return h.Frames[h.index]
 }
 
 // Looper is a helper to determine if looping should continue.
