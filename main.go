@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/gdamore/tcell/v2"
-	"github.com/nfnt/resize"
 
 	"github.com/spenserblack/termage/cmd"
 	"github.com/spenserblack/termage/internal/files"
@@ -357,11 +357,11 @@ func (percentage Zoom) TransImage(i image.Image) image.Image {
 	bounds := i.Bounds()
 	// NOTE Adjusts width of "pixels" to match height
 	width := float32(bounds.Max.X) * pixelHeight
-	return resize.Resize(
-		uint(width)*uint(percentage)/100,
-		uint(bounds.Max.Y)*uint(percentage)/100,
+	return imaging.Resize(
 		i,
-		resize.NearestNeighbor,
+		int(width)*int(percentage)/100,
+		bounds.Max.Y*int(percentage)/100,
+		imaging.Linear,
 	)
 }
 
