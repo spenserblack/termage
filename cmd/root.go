@@ -10,6 +10,10 @@ import (
 )
 
 var (
+	// Supported is a map containing file extensions that should be
+	// supported. Modify before command is executed to set the extensions
+	// that should be supported.
+	Supported map[string]struct{}
 	// ImageFiles contains the filepaths that the user has specified.
 	// This will be used when user specifies more than 1 image.
 	ImageFiles []string = nil
@@ -25,7 +29,7 @@ If multiple files are passed, then you will browse specifically those files.`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ImageFiles = args
-			internal.Root(ImageFiles)
+			internal.Root(ImageFiles, Supported)
 		},
 	}
 )

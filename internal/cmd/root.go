@@ -3,9 +3,6 @@ package cmd
 import (
 	"fmt"
 	"image"
-	_ "image/gif"  // registers GIFs
-	_ "image/jpeg" // registers JPEGs
-	_ "image/png"  // registers PNGs
 	"log"
 	"os"
 	"path/filepath"
@@ -24,13 +21,6 @@ const (
 	pixelHeight    float32 = 2.15
 )
 
-var supportedExtensions = []string{
-	"jpeg",
-	"jpg",
-	"png",
-	"gif",
-}
-
 // Shift is a wrapper around image.Point that specifies absolute shift
 // or relative.
 type Shift struct {
@@ -42,15 +32,11 @@ type Shift struct {
 type Zoom uint
 
 // Root is the main function to be run by the root command.
-func Root(imageFiles []string) {
+func Root(imageFiles []string, supported map[string]struct{}) {
 	var browser files.FileBrowser
 	var err error
 
 	if len(imageFiles) == 1 {
-		supported := make(map[string]struct{})
-		for _, v := range supportedExtensions {
-			supported["."+v] = struct{}{}
-		}
 		browser, err = files.NewFileBrowser(imageFiles[0], supported)
 	} else {
 		browser = files.FileBrowser{Filenames: imageFiles}
