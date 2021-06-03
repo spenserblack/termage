@@ -5,12 +5,15 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	internal "github.com/spenserblack/termage/internal/cmd"
 )
 
 var (
-	// ImageFile is the filepath to the initial file/directory.
-	// It will be empty if user passes more than 1 image.
-	ImageFile string
+	// Supported is a map containing file extensions that should be
+	// supported. Modify before command is executed to set the extensions
+	// that should be supported.
+	Supported map[string]struct{}
 	// ImageFiles contains the filepaths that the user has specified.
 	// This will be used when user specifies more than 1 image.
 	ImageFiles []string = nil
@@ -25,12 +28,8 @@ directory as that image.
 If multiple files are passed, then you will browse specifically those files.`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			switch len(args) {
-			case 1:
-				ImageFile = args[0]
-			default:
-				ImageFiles = args
-			}
+			ImageFiles = args
+			internal.Root(ImageFiles, Supported)
 		},
 	}
 )
