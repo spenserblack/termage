@@ -10,7 +10,7 @@ import (
 // subcommand.
 //
 // It can be set at build-time with ldflags.
-//  go build -ldflags "-X github.com/spenserblack/termage/cmd.Version=x.y.z" main.go
+//  go build -ldflags "-X main.version=x.y.z" main.go
 var Version string
 
 var versionCmd = &cobra.Command{
