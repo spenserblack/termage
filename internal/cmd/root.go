@@ -141,15 +141,17 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 
 	go func() {
 		loadImage()
-		var fitZoom, currentZoom Zoom
-		title := <-titleChan
-		currentImage := <-images
-		stopAnimation := make(chan struct{}, 1)
-		var nextFrame chan conversion.RGBRunes
-		var zoomChan chan Zoom
-		var rgbRunes conversion.RGBRunes
-		var currentWidth, currentHeight int
-		maxWidth, maxHeight := s.Size()
+		var (
+			fitZoom, currentZoom        Zoom
+			title                       string        = <-titleChan
+			currentImage                image.Image   = <-images
+			stopAnimation               chan struct{} = make(chan struct{}, 1)
+			nextFrame                   chan conversion.RGBRunes
+			zoomChan                    chan Zoom
+			rgbRunes                    conversion.RGBRunes
+			currentWidth, currentHeight int
+			maxWidth, maxHeight         int = s.Size()
+		)
 		maxWidth = int(float32(maxWidth) / pixelHeight)
 		if maxWidth < maxHeight {
 			currentZoom = Zoom(uint(maxWidth) * 100 / uint(currentImage.Bounds().Max.X))
