@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/spenserblack/termage/cmd/internal/root"
+	internal "github.com/spenserblack/termage/internal/cmd"
 )
 
 var (
@@ -25,7 +25,7 @@ If multiple files are passed, then you will browse specifically those files.`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ImageFiles = args
-			root.Root(ImageFiles)
+			internal.Root(ImageFiles)
 		},
 	}
 )
