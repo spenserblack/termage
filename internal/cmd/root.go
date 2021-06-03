@@ -14,8 +14,8 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/gdamore/tcell/v2"
 
+	"github.com/spenserblack/termage/internal/conversion"
 	"github.com/spenserblack/termage/internal/files"
-	"github.com/spenserblack/termage/pkg/conversion"
 	"github.com/spenserblack/termage/pkg/gif"
 )
 
