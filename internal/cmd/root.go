@@ -356,6 +356,10 @@ func AnimateGif(g *gif.Helper, nextFrame chan conversion.RGBRunes, stop chan str
 	index := 0
 	max := len(g.Frames)
 	frames := make([]conversion.RGBRunes, max, max)
+	// NextFrameSem is used to let the animator know when the wait has completed
+	// and the next frame is ready.
+	nextFrameSem := make(chan struct{}, 1)
+	nextFrameSem <- struct{}{}
 	zoom := <-zoomChan
 	for i, v := range g.Frames {
 		zoomedImage := zoom.TransImage(v)
@@ -371,8 +375,12 @@ func AnimateGif(g *gif.Helper, nextFrame chan conversion.RGBRunes, stop chan str
 				frames[i] = conversion.RGBRunesFromImage(zoomedImage)
 			}
 		default:
+			<-nextFrameSem
 			nextFrame <- frames[index]
-			time.Sleep(g.Delay())
+			go func() {
+				time.Sleep(g.Delay())
+				nextFrameSem <- struct{}{}
+			}()
 			if err := g.NextFrame(); err != nil {
 				return
 			}
