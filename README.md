@@ -7,9 +7,20 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 ## Installation
 
+### Preferred Method (Linux)
+
+```bash
+# This will set the most accurate version info
+# via -ldflags for the "version" subcommand
+git clone https://github.com/spenserblack/termage.git && cd termage && make install
+```
+
+### Other Methods
+
 ```bash
 go get -u github.com/spenserblack/termage
-# or
+```
+```bash
 go install github.com/spenserblack/termage@latest
 ```
 
