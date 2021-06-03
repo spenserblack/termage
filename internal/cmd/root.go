@@ -277,7 +277,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					}
 				}
 			case frame := <-nextFrame:
-				draw(title, frame)
+				go draw(title, frame)
 				rgbRunes = frame
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 			}
