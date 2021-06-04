@@ -143,10 +143,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		loadImage()
 		var (
 			fitZoom, currentZoom        Zoom
-			title                       string        = <-titleChan
-			currentImage                image.Image   = <-images
-			stopAnimation               chan struct{} = make(chan struct{}, 1)
-			nextFrame                   chan conversion.RGBRunes
+			title                       string                   = <-titleChan
+			currentImage                image.Image              = <-images
+			stopAnimation               chan struct{}            = make(chan struct{}, 1)
+			nextFrame                   chan conversion.RGBRunes = make(chan conversion.RGBRunes)
 			zoomChan                    chan Zoom
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
