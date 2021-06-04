@@ -172,7 +172,6 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			select {
 			case currentImage = <-images:
 				stopAnimation <- struct{}{}
-				stopAnimation = make(chan struct{}, 1)
 				maxWidth, maxHeight := s.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
@@ -185,12 +184,14 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				}
 				fitZoom = currentZoom
 				if g, ok := currentImage.(*gif.Helper); ok {
+					stopAnimation = make(chan struct{})
 					nextFrame = make(chan conversion.RGBRunes)
 					zoomChan = make(chan Zoom)
 					go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
 					zoomChan <- currentZoom
 					continue
 				}
+				stopAnimation = make(chan struct{}, 1)
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
