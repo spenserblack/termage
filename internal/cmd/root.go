@@ -147,7 +147,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			currentImage                image.Image              = <-images
 			stopAnimation               chan struct{}            = make(chan struct{}, 1)
 			nextFrame                   chan conversion.RGBRunes = make(chan conversion.RGBRunes)
-			zoomChan                    chan Zoom
+			zoomChan                    chan Zoom                = make(chan Zoom)
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
 			maxWidth, maxHeight         int = s.Size()
