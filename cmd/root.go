@@ -17,7 +17,8 @@ var (
 	// ImageFiles contains the filepaths that the user has specified.
 	// This will be used when user specifies more than 1 image.
 	ImageFiles []string = nil
-	rootCmd             = &cobra.Command{
+	// RootCmd is the root cobra command that runs the image viewer.
+	RootCmd = &cobra.Command{
 		Use:   "termage {<FILE | DIRECTORY> | <FILES...>}",
 		Short: "Browse image files as ASCII in your terminal",
 		Long: `This application is a tool to view your image files
@@ -31,12 +32,13 @@ If multiple files are passed, then you will browse specifically those files.`,
 			ImageFiles = args
 			internal.Root(ImageFiles, Supported)
 		},
+		Version: "development",
 	}
 )
 
 // Execute runs this project's CLI.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

@@ -16,7 +16,7 @@ var version string
 
 func main() {
 	cmd.Supported = supported
-	cmd.Version = version
+	cmd.RootCmd.Version = version
 	cmd.Execute()
 }
 
