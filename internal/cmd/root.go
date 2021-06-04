@@ -147,7 +147,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			currentImage                image.Image              = <-images
 			stopAnimation               chan struct{}            = make(chan struct{}, 1)
 			nextFrame                   chan conversion.RGBRunes = make(chan conversion.RGBRunes)
-			zoomChan                    chan Zoom                = make(chan Zoom)
+			zoomChan                    chan Zoom                = make(chan Zoom, 1)
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
 			maxWidth, maxHeight         int = s.Size()
@@ -164,7 +164,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		fitZoom = currentZoom
 		if g, ok := currentImage.(*gif.Helper); ok {
 			nextFrame = make(chan conversion.RGBRunes)
-			zoomChan = make(chan Zoom)
+			zoomChan = make(chan Zoom, 1)
 			go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
 			zoomChan <- currentZoom
 		}
@@ -186,7 +186,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				}
 				fitZoom = currentZoom
 				if g, ok := currentImage.(*gif.Helper); ok {
-					zoomChan = make(chan Zoom)
+					zoomChan = make(chan Zoom, 1)
 					go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
 					zoomChan <- currentZoom
 					continue
