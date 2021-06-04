@@ -163,8 +163,6 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		}
 		fitZoom = currentZoom
 		if g, ok := currentImage.(*gif.Helper); ok {
-			nextFrame = make(chan conversion.RGBRunes)
-			zoomChan = make(chan Zoom, 1)
 			go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
 			zoomChan <- currentZoom
 		}
