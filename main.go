@@ -11,8 +11,14 @@ import (
 // Supported is a map of file extensions that are supported.
 var supported map[string]struct{}
 
+// Version is the current version at build.
+var version string
+
 func main() {
 	cmd.Supported = supported
+	if version != "" {
+		cmd.RootCmd.Version = version
+	}
 	cmd.Execute()
 }
 
