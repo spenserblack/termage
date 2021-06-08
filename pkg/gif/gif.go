@@ -56,7 +56,7 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 	}
 	frames := make([]Frame, 1, len(g.Image))
 	frames[0] = Frame{g.Image[0], g.Delay[0], g.Disposal[0]}
-	for i, v := range g.Image {
+	for i, v := range g.Image[1:] {
 		prevFrame := frames[len(frames)-1]
 		nextFrame := image.NewRGBA(prevFrame.Bounds())
 		draw.Src.Draw(
@@ -68,8 +68,8 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 		draw.Over.Draw(nextFrame, nextFrame.Bounds(), v, image.Point{})
 		frames = append(frames, Frame{
 			nextFrame,
-			g.Delay[i],
-			g.Disposal[i],
+			g.Delay[i+1],
+			g.Disposal[i+1],
 		})
 	}
 
