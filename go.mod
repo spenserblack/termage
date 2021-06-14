@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/disintegration/imaging v1.6.2
-	github.com/gdamore/tcell/v2 v2.3.3
+	github.com/gdamore/tcell/v2 v2.3.11
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
