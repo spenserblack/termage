@@ -1,6 +1,8 @@
 package conversion
 
 import (
+	"image"
+	"image/color"
 	"testing"
 )
 
@@ -54,5 +56,68 @@ func TestRuneToRGBA(t *testing.T) {
 	}
 	if a != 0xFFFF {
 		t.Errorf(`Opaque alpha = %v, want %v`, a, 0xFFFF)
+	}
+}
+
+// TestRGBRuneCreation tests that an RGBRune is created with the correct pixel
+// placement and values.
+func TestRGBRuneCreation(t *testing.T) {
+	min := image.Point{0, 0}
+	max := image.Point{2, 2}
+
+	img := image.NewRGBA(image.Rectangle{min, max})
+
+	red := color.RGBA{0xFF, 0, 0, 0xFF}
+	green := color.RGBA{0, 0xFF, 0, 0xFF}
+	blue := color.RGBA{0, 0, 0xFF, 0xFF}
+	transparent := color.RGBA{0, 0, 0, 0}
+
+	img.Set(0, 0, red)
+	img.Set(1, 0, green)
+	img.Set(0, 1, blue)
+	img.Set(1, 1, transparent)
+
+	rgbRunes := RGBRunesFromImage(img)
+
+	if l, exp := len(rgbRunes.rgbRunes), 4; l != exp {
+		t.Fatalf(`%v rgb runes (%v), want %v`, l, rgbRunes.rgbRunes, exp)
+	}
+	if width := rgbRunes.Width(); width != 2 {
+		t.Fatalf(`width = %v, want 1`, width)
+	}
+	if height := rgbRunes.Height(); height != 2 {
+		t.Fatalf(`width = %v, want 1`, height)
+	}
+
+	originalColors := [4]color.Color{red, green, blue, transparent}
+	expectedReds := [4]uint32{0xFFFF, 0, 0, 0}
+	expectedGreens := [4]uint32{0, 0xFFFF, 0, 0}
+	expectedBlues := [4]uint32{0, 0, 0xFFFF, 0}
+	expectedAlphas := [4]rune{'█', '█', '█', ' '}
+	channelText := [3]string{"red", "green", "blue"}
+
+	for i, oc := range originalColors {
+		rgbRune := rgbRunes.At(i&0b01, i>>1)
+		expectedChannels := [3]uint32{
+			expectedReds[i],
+			expectedGreens[i],
+			expectedBlues[i],
+		}
+		actualChannels := [3]uint32{
+			rgbRune.R,
+			rgbRune.G,
+			rgbRune.B,
+		}
+
+		for cIndex, ec := range expectedChannels {
+			ac := actualChannels[cIndex]
+			channelName := channelText[cIndex]
+			if ac != ec {
+				t.Errorf(`%s channel for %v = %v, want %v`, channelName, oc, ac, ec)
+			}
+		}
+		if er, ar := expectedAlphas[i], rgbRune.Rune; ar != er {
+			t.Errorf(`rune for %v = %q, want %q`, oc, ar, er)
+		}
 	}
 }
