@@ -169,6 +169,8 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		for {
 			select {
 			case currentImage = <-images:
+				xMod = 0
+				yMod = 0
 				stopAnimation <- struct{}{}
 				stopAnimation = make(chan struct{}, 1)
 				nextFrame = make(chan conversion.RGBRunes)
