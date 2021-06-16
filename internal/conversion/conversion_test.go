@@ -28,3 +28,31 @@ func TestAlphaToRune(t *testing.T) {
 		}
 	}
 }
+
+// TestRuneToRGBA checks that RGBRune correctly implements the image/color.Color
+// interface.
+func TestRuneToRGBA(t *testing.T) {
+	transparent := RGBRune{0xFFFF, 0, 0, ' '}
+	r, _, _, a := transparent.RGBA()
+	if r != 0 {
+		t.Errorf(`Transparent should have no color, red = %v`, r)
+	}
+	if a != 0 {
+		t.Errorf(`' ' should result in completely transparent but got %v`, a)
+	}
+
+	opaqueRed := RGBRune{0xFFFF, 0, 0, '█'}
+	r, g, b, a := opaqueRed.RGBA()
+	if r != 0xFFFF {
+		t.Errorf(`Opaque max red = %v, want %v`, r, 0xFFFF)
+	}
+	if g != 0 {
+		t.Errorf(`Opaque 0 green = %v, want %v`, r, 0)
+	}
+	if b != 0 {
+		t.Errorf(`Opaque 0 blue = %v, want %v`, r, 0)
+	}
+	if a != 0xFFFF {
+		t.Errorf(`Opaque alpha = %v, want %v`, a, 0xFFFF)
+	}
+}
