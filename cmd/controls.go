@@ -12,7 +12,7 @@ type controlMapping struct {
 }
 
 func (m controlMapping) String() string {
-	return fmt.Sprintf("%s - %s", m.key, m.action)
+	return fmt.Sprintf("%-10s%s", m.key, m.action)
 }
 
 var controls = []controlMapping{
