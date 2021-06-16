@@ -59,6 +59,15 @@ func TestRuneToRGBA(t *testing.T) {
 	}
 }
 
+// TestWeirdRuneToRGBA checks that an RGBRune with an invalid rune is transparent.
+func TestWeirdRuneToRGBA(t *testing.T) {
+	weird := RGBRune{0xFFFF, 0xFF, 0, '?'}
+
+	if _, _, _, a := weird.RGBA(); a != 0 {
+		t.Fatalf(`Invalid rune alpha channel = %v, want 0`, a)
+	}
+}
+
 // TestRGBRuneCreation tests that an RGBRune is created with the correct pixel
 // placement and values.
 func TestRGBRuneCreation(t *testing.T) {
