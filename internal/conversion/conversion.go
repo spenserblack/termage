@@ -94,7 +94,7 @@ func (rgb RGBRune) RGBA() (r, g, b, a uint32) {
 	r, g, b = rgb.R, rgb.G, rgb.B
 	for i, ac := range AlphaChars[1:] {
 		if rgb.Rune == ac {
-			a = 0xFFFF / uint32(len(AlphaChars)) * uint32(i+1)
+			a = 0xFFFF / uint32(len(AlphaChars)) * uint32(i+2)
 			return
 		}
 	}
