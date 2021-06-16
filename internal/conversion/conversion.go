@@ -87,11 +87,11 @@ func (rgb *RGBRunes) Height() int {
 // RGBA allows the RGBRune to implement the image/color.Color interface.
 // It returns the RGB values, and an alpha value calculated from its rune.
 func (rgb RGBRune) RGBA() (r, g, b, a uint32) {
-	r, g, b = rgb.R, rgb.G, rgb.B
 	if rgb.Rune == AlphaChars[0] {
 		a = 0
 		return
 	}
+	r, g, b = rgb.R, rgb.G, rgb.B
 	for i, ac := range AlphaChars[1:] {
 		if rgb.Rune == ac {
 			a = 0xFFFF / uint32(len(AlphaChars)) * uint32(i+1)
