@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/spf13/cobra"
 )
@@ -36,8 +37,9 @@ var controlsCmd = &cobra.Command{
 	Use:   "controls",
 	Short: "Print controls",
 	Run: func(cmd *cobra.Command, args []string) {
+		out := cmd.OutOrStdout()
 		for _, control := range controls {
-			fmt.Println(control)
+			io.WriteString(out, fmt.Sprintf("%s\n", control))
 		}
 	},
 }
