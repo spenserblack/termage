@@ -31,19 +31,16 @@ func NewFileBrowser(filename string, extensions map[string]struct{}) (browser Fi
 		return browser, newFileBrowserError(filename, err)
 	}
 
-	if fileInfo, err := osStat(filename); err != nil {
+	currentFileStats, err := osStat(absoluteFilename)
+	if err != nil {
 		return browser, newFileBrowserError(filename, err)
-	} else if fileInfo.IsDir() {
+	} else if currentFileStats.IsDir() {
 		currentDir = absoluteFilename
 	} else {
 		currentDir = filepath.Dir(absoluteFilename)
 	}
 
 	matches, _ := filepath.Glob(filepath.Join(currentDir, "*"))
-	currentFileStats, err := os.Stat(absoluteFilename)
-	if err != nil {
-		return
-	}
 
 	for _, fpath := range matches {
 		// NOTE Skips if extension is not supported
