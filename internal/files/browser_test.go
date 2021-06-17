@@ -1,8 +1,10 @@
 package files
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -198,5 +200,26 @@ func TestNonexistent(t *testing.T) {
 
 	if err == nil {
 		t.Fatalf(`err = nil`)
+	}
+}
+
+// TestOsStatError checks that an error is returned if os.Stat fails for
+// any reason.
+func TestOsStatError(t *testing.T) {
+	mockError := errors.New("mocked")
+	osStat = func(string) (os.FileInfo, error) {
+		return nil, mockError
+	}
+	defer func() {
+		osStat = os.Stat
+	}()
+
+	tempDir := t.TempDir()
+
+	_, err := NewFileBrowser(tempDir, imageExtensions)
+	want := fmt.Errorf("Couldn't initialize file browser for %q: %w", tempDir, mockError)
+
+	if err.Error() != want.Error() {
+		t.Errorf(`err = %v, want %v`, err, want)
 	}
 }

@@ -15,6 +15,9 @@ type FileBrowser struct {
 	Filenames []string
 }
 
+// OsStat is set to a variable so that it can be mocked.
+var osStat = os.Stat
+
 // NewFileBrowser creates a new file browser from a string pointing to a file
 // or directory. If it is a file, then that is the initial file selected by the
 // returned FileBrowser. If it is a directory, then the index will start at 0.
@@ -25,7 +28,7 @@ func NewFileBrowser(filename string, extensions map[string]struct{}) (browser Fi
 		return browser, newFileBrowserError(filename, err)
 	}
 
-	if fileInfo, err := os.Stat(filename); err != nil {
+	if fileInfo, err := osStat(filename); err != nil {
 		return browser, newFileBrowserError(filename, err)
 	} else if fileInfo.IsDir() {
 		currentDir = absoluteFilename
