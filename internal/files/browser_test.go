@@ -122,7 +122,7 @@ func TestSubdirSkipped(t *testing.T) {
 			panic(err)
 		}
 	}
-	tempSubDir, err := ioutil.TempDir(tempDir, "temp-subdir")
+	tempSubDir, err := ioutil.TempDir(tempDir, "temp-subdir*.jpg")
 	if err != nil {
 		panic(err)
 	}
