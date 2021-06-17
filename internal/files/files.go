@@ -33,10 +33,7 @@ func NewFileBrowser(filename string, extensions map[string]struct{}) (browser Fi
 		currentDir = filepath.Dir(absoluteFilename)
 	}
 
-	matches, err := filepath.Glob(filepath.Join(currentDir, "*"))
-	if err != nil {
-		return
-	}
+	matches, _ := filepath.Glob(filepath.Join(currentDir, "*"))
 	currentFileStats, err := os.Stat(absoluteFilename)
 	if err != nil {
 		return
