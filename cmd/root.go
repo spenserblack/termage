@@ -9,6 +9,9 @@ import (
 	internal "github.com/spenserblack/termage/internal/cmd"
 )
 
+// Vars for mocking.
+var osExit = os.Exit
+
 var (
 	// Supported is a map containing file extensions that should be
 	// supported. Modify before command is executed to set the extensions
@@ -39,7 +42,8 @@ If multiple files are passed, then you will browse specifically those files.`,
 // Execute runs this project's CLI.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		errOut := RootCmd.ErrOrStderr()
+		fmt.Fprintln(errOut, err)
+		osExit(1)
 	}
 }
