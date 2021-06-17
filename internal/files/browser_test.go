@@ -223,3 +223,24 @@ func TestOsStatError(t *testing.T) {
 		t.Errorf(`err = %v, want %v`, err, want)
 	}
 }
+
+// TestFilePathAbsError checks that an error is returned if filepath.Abs fails
+// for any reason.
+func TestFilePathAbsError(t *testing.T) {
+	mockError := errors.New("mocked")
+	absPath = func(string) (string, error) {
+		return "", mockError
+	}
+	defer func() {
+		absPath = filepath.Abs
+	}()
+
+	tempDir := t.TempDir()
+
+	_, err := NewFileBrowser(tempDir, imageExtensions)
+	want := fmt.Errorf("Couldn't initialize file browser for %q: %w", tempDir, mockError)
+
+	if err.Error() != want.Error() {
+		t.Errorf(`err = %v, want %v`, err, want)
+	}
+}
