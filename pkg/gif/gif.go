@@ -30,17 +30,6 @@ type Helper struct {
 	Frames    []Frame
 	loopCount looper
 	index     int
-	cache     gifCache
-}
-
-// GifCache caches a drawn image so that it doesn't have to be re-drawn
-// unless necessary.
-type gifCache struct {
-	// Image is the cached image.
-	image.Image
-	// Index is the index of the cached image.
-	// If incides don't match, a new image should be cached.
-	index int
 }
 
 // NewHelper constructs a helper for managing animated GIFs.
@@ -87,7 +76,6 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 		frames,
 		l,
 		0,
-		gifCache{image.NewRGBA(image.Rect(0, 0, 0, 0)), -1},
 	}
 	return
 }
