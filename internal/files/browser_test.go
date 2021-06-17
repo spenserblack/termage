@@ -190,3 +190,13 @@ func TestBrowserBack(t *testing.T) {
 		}
 	}
 }
+
+// TestNonexistent checks that an error is returned when a non-existent
+// directory/file is attempted to be opened.
+func TestNonexistent(t *testing.T) {
+	_, err := NewFileBrowser("...", imageExtensions)
+
+	if err == nil {
+		t.Fatalf(`err = nil`)
+	}
+}
