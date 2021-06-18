@@ -10,7 +10,10 @@ import (
 )
 
 // Vars for mocking.
-var osExit = os.Exit
+var (
+	osExit   = os.Exit
+	mainFunc = internal.Root
+)
 
 var (
 	// Supported is a map containing file extensions that should be
@@ -33,7 +36,7 @@ If multiple files are passed, then you will browse specifically those files.`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ImageFiles = args
-			internal.Root(ImageFiles, Supported)
+			mainFunc(ImageFiles, Supported)
 		},
 		Version: "development",
 	}
