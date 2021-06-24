@@ -3,7 +3,6 @@ package gif
 import (
 	"errors"
 	"image"
-	"image/color"
 	"image/draw"
 	"image/gif"
 	"io"
@@ -13,7 +12,6 @@ import (
 var (
 	// ErrAnimationComplete signifies that the animation should not continue.
 	ErrAnimationComplete = errors.New("Animation is complete")
-	alpha                = color.RGBA{0, 0, 0, 0}
 )
 
 // Frame is a helper struct to group together GIF frame info, which is stored
