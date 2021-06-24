@@ -2,6 +2,7 @@ package gif
 
 import (
 	"errors"
+	"image/color"
 	"image/gif"
 	"os"
 	"path/filepath"
@@ -49,8 +50,63 @@ func TestSpinning2x2(t *testing.T) {
 	if l := len(gifHelper.Frames); l != 4 {
 		t.Fatalf(`%d frames, want 4`, l)
 	}
-	if actual, want := gifHelper.Delay(), 500*time.Millisecond; actual != want {
-		t.Errorf(`Background 1: delay = %v, want %v`, actual, want)
+
+	wantDelays := []time.Duration{
+		500 * time.Millisecond,
+		100 * time.Millisecond,
+		100 * time.Millisecond,
+		100 * time.Millisecond,
+	}
+
+	backgroundWantColors := [][]color.Color{
+		{color.White, color.White},
+		{color.Black, color.White},
+	}
+	frame1WantColors := [][]color.Color{
+		{color.Black, color.White},
+		{color.White, color.White},
+	}
+	frame2WantColors := [][]color.Color{
+		{color.White, color.Black},
+		{color.White, color.White},
+	}
+	frame3WantColors := [][]color.Color{
+		{color.White, color.White},
+		{color.White, color.Black},
+	}
+	wantColors := [][][]color.Color{
+		backgroundWantColors,
+		frame1WantColors,
+		frame2WantColors,
+		frame3WantColors,
+	}
+
+	for i := 0; i < 4; i++ {
+		if actual, want := gifHelper.Delay(), wantDelays[i]; actual != want {
+			t.Errorf(`Frame %d; delay = %v, want %v`, i, actual, want)
+		}
+
+		m := gifHelper.CurrentImage()
+		wantImage := wantColors[i]
+
+		for y, row := range wantImage {
+			for x, c := range row {
+				r, g, b, a := m.At(x, y).RGBA()
+				wr, wg, wb, wa := c.RGBA()
+				if r != wr || g != wg || b != wb || a != wa {
+					t.Errorf(
+						`Frame %d @ pixel %d, %d: RGBA channels = %v %v %v %v, want %v %v %v %v`,
+						i, x, y,
+						r, g, b, a,
+						wr, wg, wb, wa,
+					)
+				}
+			}
+		}
+
+		if err := gifHelper.NextFrame(); err != nil {
+			t.Fatalf(`Frame %d: should be infinite loop, NextFrame = %v`, i, err)
+		}
 	}
 }
 
