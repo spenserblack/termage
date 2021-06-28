@@ -2,6 +2,7 @@ package gif
 
 import (
 	"errors"
+	"image"
 	"image/color"
 	"image/gif"
 	"os"
@@ -49,6 +50,13 @@ func TestSpinning2x2(t *testing.T) {
 	}
 	if l := len(gifHelper.Frames); l != 4 {
 		t.Fatalf(`%d frames, want 4`, l)
+	}
+	bounds := gifHelper.Bounds()
+	if want := (image.Point{0, 0}); bounds.Min != want {
+		t.Fatalf(`Bounds().Min = %v, want %v`, bounds.Min, want)
+	}
+	if want := (image.Point{2, 2}); bounds.Max != want {
+		t.Fatalf(`Bounds().Max = %v, want %v`, bounds.Max, want)
 	}
 
 	wantDelays := []time.Duration{
