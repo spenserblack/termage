@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	internal "github.com/spenserblack/termage/internal/cmd"
@@ -27,12 +28,14 @@ var (
 	RootCmd = &cobra.Command{
 		Use:   "termage {<FILE | DIRECTORY> | <FILES...>}",
 		Short: "Browse image files as ASCII in your terminal",
-		Long: `This application is a tool to view your image files
-as ASCII art without leaving your terminal.
-If a directory is passed, you will browse all images in that directory.
-If a single image file is passed, you will browse all images in the same
-directory as that image.
-If multiple files are passed, then you will browse specifically those files.`,
+		Long: heredoc.Doc(`
+			This application is a tool to view your image files
+			as ASCII art without leaving your terminal.
+			If a directory is passed, you will browse all images in that directory.
+			If a single image file is passed, you will browse all images in the same
+			directory as that image.
+			If multiple files are passed, then you will browse specifically those files.
+		`),
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ImageFiles = args
