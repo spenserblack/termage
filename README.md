@@ -13,7 +13,7 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 ```bash
 # This will set the most accurate version info
 # via -ldflags for the "version" subcommand
-git clone https://github.com/spenserblack/termage.git && cd termage && make install
+curl https://raw.githubusercontent.com/spenserblack/termage/master/install.sh | bash
 ```
 
 ### Other Methods
