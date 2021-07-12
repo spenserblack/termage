@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 TEMP=$(mktemp -d)
 git clone https://github.com/spenserblack/termage.git $TEMP
 cd $TEMP

@@ -10,18 +10,18 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 ### Preferred Method (Linux)
 
-```bash
+```sh
 # This will set the most accurate version info
 # via -ldflags for the "version" subcommand
-curl https://raw.githubusercontent.com/spenserblack/termage/master/install.sh | bash
+curl https://raw.githubusercontent.com/spenserblack/termage/master/install.sh | sh
 ```
 
 ### Other Methods
 
-```bash
+```sh
 go get -u github.com/spenserblack/termage
 ```
-```bash
+```sh
 go install github.com/spenserblack/termage@latest
 ```
 
@@ -29,7 +29,7 @@ go install github.com/spenserblack/termage@latest
 
 ### Help
 
-```bash
+```sh
 termage --help
 ```
 
@@ -37,19 +37,19 @@ termage --help
 
 #### Starting from first image in directory
 
-```bash
+```sh
 termage path/to/dir/
 ```
 
 #### Starting from a specific image
 
-```bash
+```sh
 termage path/to/dir/image
 ```
 
 ### Browse a specific subset of images
 
-```bash
+```sh
 termage path/to/image1 path/to/image2 # ...
 ```
 
