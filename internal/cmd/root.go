@@ -147,11 +147,14 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			currentImage                image.Image              = <-images
 			stopAnimation               chan struct{}            = make(chan struct{}, 1)
 			nextFrame                   chan conversion.RGBRunes = make(chan conversion.RGBRunes)
-			zoomChan                    chan Zoom                = make(chan Zoom, 1)
+			zoomChan                    chan Zoom                = make(chan Zoom)
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
 			maxWidth, maxHeight         int = s.Size()
 		)
+		zoomGif := func() {
+			zoomChan <- currentZoom
+		}
 		maxWidth = int(float32(maxWidth) / pixelHeight)
 		if maxWidth < maxHeight {
 			currentZoom = Zoom(uint(maxWidth) * 100 / uint(currentImage.Bounds().Max.X))
@@ -164,7 +167,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		fitZoom = currentZoom
 		if g, ok := currentImage.(*gif.Helper); ok {
 			go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
-			zoomChan <- currentZoom
+			go zoomGif()
 		}
 		for {
 			select {
@@ -188,7 +191,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				if g, ok := currentImage.(*gif.Helper); ok {
 					zoomChan = make(chan Zoom, 1)
 					go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
-					zoomChan <- currentZoom
+					go zoomGif()
 					continue
 				}
 				resizedImage := currentZoom.TransImage(currentImage)
@@ -205,7 +208,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					currentZoom += 10
 				}
 				if _, ok := currentImage.(*gif.Helper); ok {
-					zoomChan <- currentZoom
+					go zoomGif()
 					continue
 				}
 				resizedImage := currentZoom.TransImage(currentImage)
@@ -221,7 +224,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				xMod /= 10
 				yMod /= 10
 				if _, ok := currentImage.(*gif.Helper); ok {
-					zoomChan <- currentZoom
+					go zoomGif()
 					continue
 				}
 				resizedImage := currentZoom.TransImage(currentImage)
@@ -243,7 +246,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				}
 				fitZoom = currentZoom
 				if _, ok := currentImage.(*gif.Helper); ok {
-					zoomChan <- currentZoom
+					go zoomGif()
 					continue
 				}
 				resizedImage := currentZoom.TransImage(currentImage)
