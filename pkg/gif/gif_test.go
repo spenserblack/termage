@@ -118,6 +118,28 @@ func TestSpinning2x2(t *testing.T) {
 	}
 }
 
+// TestAnimationNoLoop loads an animated GIF and checks that it does not loop.
+func TestAnimationNoLoop(t *testing.T) {
+	f, err := os.Open(getResource("spinning-2x2-noloop.gif"))
+	if err != nil {
+		panic(err)
+	}
+	gifHelper, err := HelperFromReader(f)
+	if err != nil {
+		t.Fatalf(`err = %v, want nil`, err)
+	}
+	if _, ok := gifHelper.loopCount.(noLoop); !ok {
+		t.Errorf(`loopCount is %T, want noLoop`, gifHelper.loopCount)
+	}
+
+	for i := 0; i < 3; i++ {
+		gifHelper.NextFrame()
+	}
+	if err := gifHelper.NextFrame(); err != ErrAnimationComplete {
+		t.Errorf(`NextFrame = %v, want %v`, err, ErrAnimationComplete)
+	}
+}
+
 type alwaysErrReader struct{}
 
 func (r alwaysErrReader) Read([]byte) (int, error) {
