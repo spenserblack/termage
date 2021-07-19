@@ -13,7 +13,7 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 ```sh
 # This will set the most accurate version info
 # via -ldflags for the "version" subcommand
-curl https://raw.githubusercontent.com/spenserblack/termage/master/install.sh | sh
+curl https://raw.githubusercontent.com/spenserblack/termage/HEAD/install.sh | sh
 ```
 
 ### Other Methods
