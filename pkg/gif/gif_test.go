@@ -140,6 +140,36 @@ func TestAnimationNoLoop(t *testing.T) {
 	}
 }
 
+// TestAnimation3Loop loads an animated GIF and checks that it loops 3 times.
+func TestAnimation3Loop(t *testing.T) {
+	f, err := os.Open(getResource("spinning-2x2-3loop.gif"))
+	if err != nil {
+		panic(err)
+	}
+	gifHelper, err := HelperFromReader(f)
+	if err != nil {
+		t.Fatalf(`err = %v, want nil`, err)
+	}
+	if loopCount, ok := gifHelper.loopCount.(*countLoop); !ok {
+		t.Errorf(`loopCount is %T, want *countLoop`, gifHelper.loopCount)
+	} else if count := loopCount.count; count != 3 {
+		t.Errorf(`count = %v, want 3`, count)
+	}
+
+	expectedNextLoops := []error{nil, nil, nil, ErrAnimationComplete}
+	for i, want := range expectedNextLoops {
+		for i := 0; i < 3; i++ {
+			gifHelper.NextFrame()
+		}
+		if err := gifHelper.NextFrame(); err != want {
+			t.Errorf(`loop %d: NextFrame = %v, want %v`, i+1, err, want)
+		}
+	}
+	if err := gifHelper.NextFrame(); err != ErrAnimationComplete {
+		t.Errorf(`NextFrame = %v, want %v`, err, ErrAnimationComplete)
+	}
+}
+
 type alwaysErrReader struct{}
 
 func (r alwaysErrReader) Read([]byte) (int, error) {
