@@ -12,6 +12,9 @@ import (
 var (
 	// ErrAnimationComplete signifies that the animation should not continue.
 	ErrAnimationComplete = errors.New("Animation is complete")
+	// ErrNotAnimated signifies that the animation cannot be created, possibly
+	// due one or less available animation frames.
+	ErrNotAnimated = errors.New("GIF isn't animated")
 )
 
 // Frame is a helper struct to group together GIF frame info, which is stored
@@ -33,7 +36,7 @@ type Helper struct {
 // NewHelper constructs a helper for managing animated GIFs.
 func NewHelper(g *gif.GIF) (helper Helper, err error) {
 	if !IsAnimated(g) {
-		return helper, errors.New("GIF isn't animated")
+		return helper, ErrNotAnimated
 	}
 	if len(g.Delay) < len(g.Image) {
 		return helper, errors.New("Not enough delays")
