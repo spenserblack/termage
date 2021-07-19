@@ -8,12 +8,21 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 ## Installation
 
-### Preferred Method (Linux)
+### Preferred Method
 
-```sh
-# This will set the most accurate version info
-# via -ldflags for the "version" subcommand
+This method is preferred because it will set the most accurate version info that will be printed
+when using the `--version` argument.
+
+#### Unix
+
+```shell
 curl https://raw.githubusercontent.com/spenserblack/termage/HEAD/install.sh | sh
+```
+
+#### PowerShell
+
+```powershell
+Invoke-WebRequest "https://raw.githubusercontent.com/spenserblack/termage/HEAD/install.ps1" | Invoke-Expression
 ```
 
 ### Other Methods
