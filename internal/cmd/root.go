@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"image"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/spenserblack/termage/internal/conversion"
 	"github.com/spenserblack/termage/internal/files"
+	"github.com/spenserblack/termage/internal/utils"
 	"github.com/spenserblack/termage/pkg/gif"
 )
 
@@ -49,7 +48,6 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		log.Fatalf("No valid images found in %q", imageFiles[0])
 	}
 	var (
-		reader *os.File
 		// Modifiers for x and y coordinates of image
 		xMod, yMod int
 		images     chan image.Image = make(chan image.Image, 1)
@@ -71,31 +69,12 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	s.SetStyle(tcell.StyleDefault)
 
 	loadImage := func() {
-		currentFile := browser.Current()
-		var err error
-		reader, err = os.Open(currentFile)
-		if err != nil {
+		m, title, err := utils.LoadImage(browser.Current())
+		if err != nil && err != utils.ErrNotAnimated {
 			log.Fatal(err)
 		}
-		defer reader.Close()
-
-		originalImage, format, err := image.Decode(reader)
-		titleChan <- fmt.Sprintf("%v [%v]", filepath.Base(currentFile), format)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		if format == "gif" {
-			reader.Seek(0, 0)
-			gifHelper, err := gif.HelperFromReader(reader)
-			if err != nil {
-				images <- originalImage
-				return
-			}
-			images <- &gifHelper
-		} else {
-			images <- originalImage
-		}
+		titleChan <- title
+		images <- m
 	}
 
 	drawTitle := func(title string) {
