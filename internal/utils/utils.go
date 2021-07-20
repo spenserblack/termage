@@ -12,16 +12,22 @@ import (
 // ErrNotAnimated is a re-export signifying that a GIF could not be animated.
 var ErrNotAnimated = gif.ErrNotAnimated
 
+// Variables for that can be changed for testing.
+var (
+	open   = os.Open
+	decode = image.Decode
+)
+
 // LoadImage returns the image data and the title of the image.
 func LoadImage(filename string) (m image.Image, title string, err error) {
-	reader, err := os.Open(filename)
+	reader, err := open(filename)
 	if err != nil {
 		err = fmt.Errorf("Couldn't open %q: %w", filename, err)
 		return
 	}
 	defer reader.Close()
 
-	m, format, err := image.Decode(reader)
+	m, format, err := decode(reader)
 	if err != nil {
 		err = fmt.Errorf("Couldn't decode %q: %w", filename, err)
 		return
