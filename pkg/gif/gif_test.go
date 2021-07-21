@@ -94,12 +94,11 @@ func TestSpinning2x2(t *testing.T) {
 			t.Errorf(`Frame %d; delay = %v, want %v`, i, actual, want)
 		}
 
-		m := gifHelper.CurrentImage()
 		wantImage := wantColors[i]
 
 		for y, row := range wantImage {
 			for x, c := range row {
-				r, g, b, a := m.At(x, y).RGBA()
+				r, g, b, a := gifHelper.At(x, y).RGBA()
 				wr, wg, wb, wa := c.RGBA()
 				if r != wr || g != wg || b != wb || a != wa {
 					t.Errorf(
