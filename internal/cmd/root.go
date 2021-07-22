@@ -20,6 +20,9 @@ const (
 	pixelHeight    float32 = 2.15
 )
 
+// Screen is the main screen that will be initialized and drawn to.
+var Screen tcell.Screen
+
 // Shift is a wrapper around image.Point that specifies absolute shift
 // or relative.
 type Shift struct {
@@ -59,14 +62,14 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		zoomOut    chan struct{}    = make(chan struct{})
 	)
 
-	s, err := tcell.NewScreen()
+	Screen, err = tcell.NewScreen()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := s.Init(); err != nil {
+	if err := Screen.Init(); err != nil {
 		log.Fatal(err)
 	}
-	s.SetStyle(tcell.StyleDefault)
+	Screen.SetStyle(tcell.StyleDefault)
 
 	loadImage := func() {
 		m, title, err := utils.LoadImage(browser.Current())
@@ -79,17 +82,17 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 
 	drawTitle := func(title string) {
 		runes := []rune(title)
-		width, _ := s.Size()
+		width, _ := Screen.Size()
 		center := width / 2
 		runesStart := center - (len(runes) / 2)
 		for i, r := range runes {
-			s.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
+			Screen.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
 		}
 	}
 
 	drawImage := func(rgbRunes conversion.RGBRunes) {
 		width, height := rgbRunes.Width(), rgbRunes.Height()
-		screenWidth, screenHeight := s.Size()
+		screenWidth, screenHeight := Screen.Size()
 		xOrigin := screenWidth / 2
 		yOrigin := (screenHeight - titleBarPixels) / 2
 		for x := 0; x < width; x++ {
@@ -100,7 +103,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				rgbRune := rgbRunes.At(x, y)
 				runeColor := tcell.FromImageColor(rgbRune)
 				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				s.SetContent(
+				Screen.SetContent(
 					(xOrigin-width/2)+(x+xMod),
 					(yOrigin-height/2)+(y+yMod),
 					rgbRune.Rune,
@@ -112,10 +115,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	}
 
 	draw := func(title string, rgbRunes conversion.RGBRunes) {
-		s.Clear()
+		Screen.Clear()
 		drawTitle(title)
 		drawImage(rgbRunes)
-		s.Show()
+		Screen.Show()
 	}
 
 	go func() {
@@ -129,7 +132,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			zoomChan                    chan Zoom                = make(chan Zoom)
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
-			maxWidth, maxHeight         int = s.Size()
+			maxWidth, maxHeight         int = Screen.Size()
 		)
 		zoomGif := func() {
 			zoomChan <- currentZoom
@@ -156,7 +159,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				stopAnimation <- struct{}{}
 				stopAnimation = make(chan struct{}, 1)
 				nextFrame = make(chan conversion.RGBRunes)
-				maxWidth, maxHeight := s.Size()
+				maxWidth, maxHeight := Screen.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
 					currentZoom = Zoom(uint(maxWidth) * 100 / uint(currentImage.Bounds().Max.X))
@@ -213,7 +216,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
-				maxWidth, maxHeight := s.Size()
+				maxWidth, maxHeight := Screen.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
 					currentZoom = Zoom(maxWidth * 100 / currentImage.Bounds().Max.X)
@@ -233,7 +236,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 				draw(title, rgbRunes)
 			case shift := <-shiftImg:
-				width, height := s.Size()
+				width, height := Screen.Size()
 				height -= titleBarPixels
 				x, y := shift.X, shift.Y
 				if shift.relative {
@@ -266,13 +269,13 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		}
 	}()
 	for {
-		switch ev := s.PollEvent().(type) {
+		switch ev := Screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			resetImg <- struct{}{}
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
-				s.Fini()
+				Screen.Fini()
 				os.Exit(0)
 			case tcell.KeyRune:
 				switch ev.Rune() {
