@@ -10,6 +10,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 
 	"github.com/spenserblack/termage/internal/conversion"
+	"github.com/spenserblack/termage/internal/draw"
 	"github.com/spenserblack/termage/internal/files"
 	"github.com/spenserblack/termage/internal/utils"
 	"github.com/spenserblack/termage/pkg/gif"
@@ -80,16 +81,6 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		images <- m
 	}
 
-	drawTitle := func(title string) {
-		runes := []rune(title)
-		width, _ := Screen.Size()
-		center := width / 2
-		runesStart := center - (len(runes) / 2)
-		for i, r := range runes {
-			Screen.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
-		}
-	}
-
 	drawImage := func(rgbRunes conversion.RGBRunes) {
 		width, height := rgbRunes.Width(), rgbRunes.Height()
 		screenWidth, screenHeight := Screen.Size()
@@ -116,7 +107,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 
 	draw := func(title string, rgbRunes conversion.RGBRunes) {
 		Screen.Clear()
-		drawTitle(title)
+		draw.Title(Screen, title)
 		drawImage(rgbRunes)
 		Screen.Show()
 	}
