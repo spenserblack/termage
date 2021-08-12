@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	titleBarPixels         = 1
-	pixelHeight    float32 = 2.15
+	pixelHeight float32 = 2.15
 )
 
 // Screen is the main screen that will be initialized and drawn to.
@@ -56,7 +55,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		xMod, yMod int
 		images     chan image.Image = make(chan image.Image, 1)
 		titleChan  chan string      = make(chan string, 1)
-		redraw     chan struct{}    = make(chan struct{}, 1)
+		doRedraw   chan struct{}    = make(chan struct{}, 1)
 		shiftImg   chan Shift       = make(chan Shift)
 		resetImg   chan struct{}    = make(chan struct{})
 		zoomIn     chan struct{}    = make(chan struct{})
@@ -81,34 +80,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		images <- m
 	}
 
-	drawImage := func(rgbRunes conversion.RGBRunes) {
-		width, height := rgbRunes.Width(), rgbRunes.Height()
-		screenWidth, screenHeight := Screen.Size()
-		xOrigin := screenWidth / 2
-		yOrigin := (screenHeight - titleBarPixels) / 2
-		for x := 0; x < width; x++ {
-			for y := titleBarPixels; y < height; y++ {
-				if (yOrigin-height/2)+y+yMod <= titleBarPixels {
-					continue
-				}
-				rgbRune := rgbRunes.At(x, y)
-				runeColor := tcell.FromImageColor(rgbRune)
-				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				Screen.SetContent(
-					(xOrigin-width/2)+(x+xMod),
-					(yOrigin-height/2)+(y+yMod),
-					rgbRune.Rune,
-					nil,
-					runeStyle,
-				)
-			}
-		}
-	}
-
-	draw := func(title string, rgbRunes conversion.RGBRunes) {
+	redraw := func(title string, rgbRunes conversion.RGBRunes) {
 		Screen.Clear()
 		draw.Title(Screen, title)
-		drawImage(rgbRunes)
+		draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
 		Screen.Show()
 	}
 
@@ -170,10 +145,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				redraw(title, rgbRunes)
 			case title = <-titleChan:
-			case <-redraw:
-				draw(title, rgbRunes)
+			case <-doRedraw:
+				redraw(title, rgbRunes)
 			case <-zoomIn:
 				if currentZoom < fitZoom && fitZoom < currentZoom+10 {
 					currentZoom = fitZoom
@@ -187,7 +162,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				redraw(title, rgbRunes)
 			case <-zoomOut:
 				if currentZoom < 11 {
 					currentZoom = 1
@@ -203,7 +178,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				redraw(title, rgbRunes)
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
@@ -225,10 +200,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				redraw(title, rgbRunes)
 			case shift := <-shiftImg:
 				width, height := Screen.Size()
-				height -= titleBarPixels
+				height -= draw.TitleBarPixels
 				x, y := shift.X, shift.Y
 				if shift.relative {
 					x = x * currentWidth / 100
@@ -253,7 +228,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					}
 				}
 			case frame := <-nextFrame:
-				go draw(title, frame)
+				go redraw(title, frame)
 				rgbRunes = frame
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 			}
@@ -286,28 +261,28 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					resetImg <- struct{}{}
 				case 'h':
 					shiftImg <- Shift{image.Point{-1, 0}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'H':
 					shiftImg <- Shift{image.Point{-10, 0}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'j':
 					shiftImg <- Shift{image.Point{0, 1}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'J':
 					shiftImg <- Shift{image.Point{0, 10}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'k':
 					shiftImg <- Shift{image.Point{0, -1}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'K':
 					shiftImg <- Shift{image.Point{0, -10}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'l':
 					shiftImg <- Shift{image.Point{1, 0}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'L':
 					shiftImg <- Shift{image.Point{10, 0}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				}
 			}
 		}
