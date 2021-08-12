@@ -80,13 +80,6 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		images <- m
 	}
 
-	redraw := func(title string, rgbRunes conversion.RGBRunes) {
-		Screen.Clear()
-		draw.Title(Screen, title)
-		draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
-		Screen.Show()
-	}
-
 	go func() {
 		loadImage()
 		var (
@@ -145,10 +138,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				redraw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case title = <-titleChan:
 			case <-doRedraw:
-				redraw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomIn:
 				if currentZoom < fitZoom && fitZoom < currentZoom+10 {
 					currentZoom = fitZoom
@@ -162,7 +155,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				redraw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomOut:
 				if currentZoom < 11 {
 					currentZoom = 1
@@ -178,7 +171,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				redraw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
@@ -200,7 +193,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				redraw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case shift := <-shiftImg:
 				width, height := Screen.Size()
 				height -= draw.TitleBarPixels
@@ -228,7 +221,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					}
 				}
 			case frame := <-nextFrame:
-				go redraw(title, frame)
+				go draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 				rgbRunes = frame
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 			}

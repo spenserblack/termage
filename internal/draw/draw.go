@@ -11,6 +11,13 @@ import (
 // TitleBarPixels is the height of the title bar in "pixels"
 const TitleBarPixels int = 1
 
+func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center image.Point) {
+	s.Clear()
+	Title(s, title)
+	Image(s, rgbRunes, center)
+	s.Show()
+}
+
 // Title draws an image title to a screen.
 func Title(s tcell.Screen, title string) {
 	runes := []rune(title)
