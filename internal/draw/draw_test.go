@@ -83,6 +83,35 @@ func TestDrawImage(t *testing.T) {
 	}
 }
 
+// TestDrawImageOverlapTitle checks that a standard image fitting the screen
+// can be drawn.
+func TestDrawImageOverlapTitle(t *testing.T) {
+	f, err := os.Open(getResource("black-and-transparent-2x2.png"))
+	defer f.Close()
+	if err != nil {
+		panic(err)
+	}
+	i, _, err := image.Decode(f)
+	if err != nil {
+		panic(err)
+	}
+	s := NewMockScreen(4, 5)
+	Title(s, "test")
+	Image(s, conversion.RGBRunesFromImage(i), image.Point{0, -2})
+
+	for x, r := range "test" {
+		if actual := s.pixels[0][x].mainc; actual != r {
+			t.Errorf(`Title bar rune %d = %v, want %v`, x, actual, r)
+		}
+	}
+	if actual, expected := s.pixels[1][1].mainc, ' '; actual != expected {
+		t.Errorf(`rune @ 1, 1 = %q, want %q`, actual, expected)
+	}
+	if actual, expected := s.pixels[1][2].mainc, '█'; actual != expected {
+		t.Errorf(`rune @ 2, 1 = %q, want %q`, actual, expected)
+	}
+}
+
 type MockScreen struct {
 	width, height int
 	pixels        [][]MockPixel
