@@ -40,7 +40,7 @@ func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 	yOrigin := (screenHeight - TitleBarPixels) / 2
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
-			if (yOrigin-height/2)+y+center.Y < TitleBarPixels {
+			if (yOrigin-height/2)+y+center.Y < 0 {
 				continue
 			}
 			rgbRune := rgbRunes.At(x, y)
