@@ -1,9 +1,16 @@
 package draw
 
 import (
+	"image"
+	_ "image/png" // Register PNGs for tests
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/gdamore/tcell/v2"
+
+	"github.com/spenserblack/termage/internal/conversion"
 )
 
 // TestDrawTitle checks that the title would be properly drawn at the top-
@@ -35,6 +42,44 @@ func TestDrawTitle(t *testing.T) {
 			titleRow[i] = s.pixels[0][i].mainc
 		}
 		t.Fatalf(`Title row = %q`, string(titleRow))
+	}
+}
+
+// TestDrawImage checks that a standard image fitting the screen can be drawn.
+func TestDrawImage(t *testing.T) {
+	f, err := os.Open(getResource("black-and-transparent-2x2.png"))
+	defer f.Close()
+	if err != nil {
+		panic(err)
+	}
+	i, _, err := image.Decode(f)
+	if err != nil {
+		panic(err)
+	}
+	s := NewMockScreen(4, 5)
+	Image(s, conversion.RGBRunesFromImage(i), image.Point{0, 0})
+
+	if actual, expected := s.pixels[2][1].mainc, '█'; actual != expected {
+		t.Errorf(`rune @ 1, 2 = %q, want %q`, actual, expected)
+	}
+	if actual, expected := s.pixels[2][2].mainc, ' '; actual != expected {
+		t.Errorf(`rune @ 2, 2 = %q, want %q`, actual, expected)
+	}
+	if actual, expected := s.pixels[3][1].mainc, ' '; actual != expected {
+		t.Errorf(`rune @ 1, 3 = %q, want %q`, actual, expected)
+	}
+	if actual, expected := s.pixels[3][2].mainc, '█'; actual != expected {
+		t.Errorf(`rune @ 2, 3 = %q, want %q`, actual, expected)
+	}
+
+	var actualForeground tcell.Color
+	actualForeground, _, _ = s.pixels[2][1].style.Decompose()
+	if actual := actualForeground.Hex(); actual != 0x000000 {
+		t.Errorf(`foreground @ 1, 2 = %v, want %v`, actual, 0x000000)
+	}
+	actualForeground, _, _ = s.pixels[3][2].style.Decompose()
+	if actual := actualForeground.Hex(); actual != 0x000000 {
+		t.Errorf(`foreground @ 2, 3 = %v, want %v`, actual, 0x000000)
 	}
 }
 
@@ -164,4 +209,17 @@ func (s *MockScreen) Resume() error {
 
 func (s *MockScreen) Beep() error {
 	return nil
+}
+
+func thisDirOrPanic() string {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("Couldn't get directory of test")
+	}
+	return filepath.Dir(file)
+}
+
+func getResource(resourceName string) string {
+	dir := thisDirOrPanic()
+	return filepath.Join(dir, "..", "..", "_resources", "tests", "internal", "draw", resourceName)
 }
