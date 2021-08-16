@@ -39,8 +39,8 @@ func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 	xOrigin := screenWidth / 2
 	yOrigin := (screenHeight - TitleBarPixels) / 2
 	for x := 0; x < width; x++ {
-		for y := TitleBarPixels; y < height; y++ {
-			if (yOrigin-height/2)+y+center.Y <= TitleBarPixels {
+		for y := 0; y < height; y++ {
+			if (yOrigin-height/2)+y+center.Y < TitleBarPixels {
 				continue
 			}
 			rgbRune := rgbRunes.At(x, y)
@@ -48,7 +48,7 @@ func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 			runeStyle := tcell.StyleDefault.Foreground(runeColor)
 			s.SetContent(
 				(xOrigin-width/2)+(x+center.X),
-				(yOrigin-height/2)+(y+center.Y),
+				(yOrigin-height/2)+(y+center.Y)+TitleBarPixels,
 				rgbRune.Rune,
 				nil,
 				runeStyle,
