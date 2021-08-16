@@ -13,6 +13,49 @@ import (
 	"github.com/spenserblack/termage/internal/conversion"
 )
 
+// TestRedraw checks that the screen would be cleared and a new image and
+// title drawn.
+func TestRedraw(t *testing.T) {
+	f, err := os.Open(getResource("black-and-transparent-2x2.png"))
+	defer f.Close()
+	if err != nil {
+		panic(err)
+	}
+	i, _, err := image.Decode(f)
+	if err != nil {
+		panic(err)
+	}
+	s := NewMockScreen(4, 5)
+	runes := conversion.RGBRunesFromImage(i)
+	Title(s, "test")
+	Image(s, runes, image.Point{1, 1})
+
+	redrawnTitle := "TEST"
+	Redraw(s, redrawnTitle, runes, image.Point{0, 0})
+
+	expectedTitle := []rune(redrawnTitle)
+	for i, pixel := range s.pixels[0] {
+		if actual, expected := pixel.mainc, expectedTitle[i]; actual != expected {
+			t.Errorf(`Title row %d = %q, want %q`, i, actual, expected)
+		}
+	}
+
+	expectedImage := [][]rune{
+		{' ', ' ', ' ', ' '},
+		{' ', '█', ' ', ' '},
+		{' ', ' ', '█', ' '},
+		{' ', ' ', ' ', ' '},
+	}
+
+	for y, row := range s.pixels[1:] {
+		for x, pixel := range row {
+			if actual, expected := pixel.mainc, expectedImage[x][y]; actual != expected {
+				t.Errorf(`pixel (%d, %d) = %q, want %q`, x, y, actual, expected)
+			}
+		}
+	}
+}
+
 // TestDrawTitle checks that the title would be properly drawn at the top-
 // center of the screen.
 func TestDrawTitle(t *testing.T) {
@@ -144,7 +187,14 @@ func (s *MockScreen) Fini()                  {}
 func (s *MockScreen) Fill(rune, tcell.Style) {}
 
 func (s *MockScreen) Clear() {
-	panic("Not implemented")
+	var emptyStyle tcell.Style
+	for y := range s.pixels {
+		for x := range s.pixels[y] {
+			s.pixels[y][x].mainc = ' '
+			s.pixels[y][x].combc = nil
+			s.pixels[y][x].style = emptyStyle
+		}
+	}
 }
 
 func (s *MockScreen) SetCell(x int, y int, style tcell.Style, ch ...rune) {
