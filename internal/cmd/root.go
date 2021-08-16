@@ -10,15 +10,18 @@ import (
 	"github.com/gdamore/tcell/v2"
 
 	"github.com/spenserblack/termage/internal/conversion"
+	"github.com/spenserblack/termage/internal/draw"
 	"github.com/spenserblack/termage/internal/files"
 	"github.com/spenserblack/termage/internal/utils"
 	"github.com/spenserblack/termage/pkg/gif"
 )
 
 const (
-	titleBarPixels         = 1
-	pixelHeight    float32 = 2.15
+	pixelHeight float32 = 2.15
 )
+
+// Screen is the main screen that will be initialized and drawn to.
+var Screen tcell.Screen
 
 // Shift is a wrapper around image.Point that specifies absolute shift
 // or relative.
@@ -52,21 +55,21 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		xMod, yMod int
 		images     chan image.Image = make(chan image.Image, 1)
 		titleChan  chan string      = make(chan string, 1)
-		redraw     chan struct{}    = make(chan struct{}, 1)
+		doRedraw   chan struct{}    = make(chan struct{}, 1)
 		shiftImg   chan Shift       = make(chan Shift)
 		resetImg   chan struct{}    = make(chan struct{})
 		zoomIn     chan struct{}    = make(chan struct{})
 		zoomOut    chan struct{}    = make(chan struct{})
 	)
 
-	s, err := tcell.NewScreen()
+	Screen, err = tcell.NewScreen()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := s.Init(); err != nil {
+	if err := Screen.Init(); err != nil {
 		log.Fatal(err)
 	}
-	s.SetStyle(tcell.StyleDefault)
+	Screen.SetStyle(tcell.StyleDefault)
 
 	loadImage := func() {
 		m, title, err := utils.LoadImage(browser.Current())
@@ -75,47 +78,6 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		}
 		titleChan <- title
 		images <- m
-	}
-
-	drawTitle := func(title string) {
-		runes := []rune(title)
-		width, _ := s.Size()
-		center := width / 2
-		runesStart := center - (len(runes) / 2)
-		for i, r := range runes {
-			s.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
-		}
-	}
-
-	drawImage := func(rgbRunes conversion.RGBRunes) {
-		width, height := rgbRunes.Width(), rgbRunes.Height()
-		screenWidth, screenHeight := s.Size()
-		xOrigin := screenWidth / 2
-		yOrigin := (screenHeight - titleBarPixels) / 2
-		for x := 0; x < width; x++ {
-			for y := titleBarPixels; y < height; y++ {
-				if (yOrigin-height/2)+y+yMod <= titleBarPixels {
-					continue
-				}
-				rgbRune := rgbRunes.At(x, y)
-				runeColor := tcell.FromImageColor(rgbRune)
-				runeStyle := tcell.StyleDefault.Foreground(runeColor)
-				s.SetContent(
-					(xOrigin-width/2)+(x+xMod),
-					(yOrigin-height/2)+(y+yMod),
-					rgbRune.Rune,
-					nil,
-					runeStyle,
-				)
-			}
-		}
-	}
-
-	draw := func(title string, rgbRunes conversion.RGBRunes) {
-		s.Clear()
-		drawTitle(title)
-		drawImage(rgbRunes)
-		s.Show()
 	}
 
 	go func() {
@@ -129,7 +91,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 			zoomChan                    chan Zoom                = make(chan Zoom)
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
-			maxWidth, maxHeight         int = s.Size()
+			maxWidth, maxHeight         int = Screen.Size()
 		)
 		zoomGif := func() {
 			zoomChan <- currentZoom
@@ -156,7 +118,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				stopAnimation <- struct{}{}
 				stopAnimation = make(chan struct{}, 1)
 				nextFrame = make(chan conversion.RGBRunes)
-				maxWidth, maxHeight := s.Size()
+				maxWidth, maxHeight := Screen.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
 					currentZoom = Zoom(uint(maxWidth) * 100 / uint(currentImage.Bounds().Max.X))
@@ -176,10 +138,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case title = <-titleChan:
-			case <-redraw:
-				draw(title, rgbRunes)
+			case <-doRedraw:
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomIn:
 				if currentZoom < fitZoom && fitZoom < currentZoom+10 {
 					currentZoom = fitZoom
@@ -193,7 +155,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomOut:
 				if currentZoom < 11 {
 					currentZoom = 1
@@ -209,11 +171,11 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
-				maxWidth, maxHeight := s.Size()
+				maxWidth, maxHeight := Screen.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
 					currentZoom = Zoom(maxWidth * 100 / currentImage.Bounds().Max.X)
@@ -231,10 +193,10 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw(title, rgbRunes)
+				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case shift := <-shiftImg:
-				width, height := s.Size()
-				height -= titleBarPixels
+				width, height := Screen.Size()
+				height -= draw.TitleBarPixels
 				x, y := shift.X, shift.Y
 				if shift.relative {
 					x = x * currentWidth / 100
@@ -259,20 +221,20 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					}
 				}
 			case frame := <-nextFrame:
-				go draw(title, frame)
+				go draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 				rgbRunes = frame
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 			}
 		}
 	}()
 	for {
-		switch ev := s.PollEvent().(type) {
+		switch ev := Screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			resetImg <- struct{}{}
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
-				s.Fini()
+				Screen.Fini()
 				os.Exit(0)
 			case tcell.KeyRune:
 				switch ev.Rune() {
@@ -292,28 +254,28 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					resetImg <- struct{}{}
 				case 'h':
 					shiftImg <- Shift{image.Point{-1, 0}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'H':
 					shiftImg <- Shift{image.Point{-10, 0}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'j':
 					shiftImg <- Shift{image.Point{0, 1}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'J':
 					shiftImg <- Shift{image.Point{0, 10}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'k':
 					shiftImg <- Shift{image.Point{0, -1}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'K':
 					shiftImg <- Shift{image.Point{0, -10}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'l':
 					shiftImg <- Shift{image.Point{1, 0}, false}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				case 'L':
 					shiftImg <- Shift{image.Point{10, 0}, true}
-					redraw <- struct{}{}
+					doRedraw <- struct{}{}
 				}
 			}
 		}
