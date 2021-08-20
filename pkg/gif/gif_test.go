@@ -40,6 +40,7 @@ func TestSpinning2x2(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
 	gifHelper, err := HelperFromReader(f)
 	if err != nil {
 		t.Fatalf(`err = %v, want nil`, err)
@@ -123,6 +124,7 @@ func TestAnimationNoLoop(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
 	gifHelper, err := HelperFromReader(f)
 	if err != nil {
 		t.Fatalf(`err = %v, want nil`, err)
@@ -145,6 +147,7 @@ func TestAnimation3Loop(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
 	gifHelper, err := HelperFromReader(f)
 	if err != nil {
 		t.Fatalf(`err = %v, want nil`, err)
