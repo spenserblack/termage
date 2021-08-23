@@ -28,7 +28,7 @@ jobs:
         run: echo "::set-output name=FILENAME::termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}"
         id: filename
       - name: Build
-        run: go build -o "${{ steps.filename.outputs.FILENAME }}" ldflags "-X main.version=${{ steps.version.outputs.VERSION }}" termage.go
+        run: go build -o "${{ steps.filename.outputs.FILENAME }}" -ldflags "-X main.version=${{ steps.version.outputs.VERSION }}" termage.go
       - uses: softprops/action-gh-release@v1
         with:
           files: ${{ steps.filename.outputs.FILENAME }}
