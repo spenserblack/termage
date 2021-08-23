@@ -6,7 +6,11 @@
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
-## Installation
+## Pre-built Binaries
+
+Pre-built binaries can be downloaded from the [latest release](https://github.com/spenserblack/termage/releases/latest).
+
+## Installation From Source
 
 ### Preferred Method
 
