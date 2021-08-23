@@ -25,7 +25,7 @@ jobs:
         run: echo "::set-output name=VERSION::$(git describe --tags)"
         id: version
       - name: Get Output Filename
-        run: echo "::set-output name=FILENAME::termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' ? '.exe' : '' }}"
+        run: echo "::set-output name=FILENAME::termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}"
         id: filename
       - name: Build
         run: go build -o "${{ steps.filename.outputs.FILENAME }}" ldflags "-X main.version=${{ steps.version.outputs.VERSION }}" termage.go
