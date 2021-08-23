@@ -49,12 +49,22 @@ func NewHelper(g *gif.GIF) (helper Helper, err error) {
 	for i, v := range g.Image[1:] {
 		prevFrame := frames[len(frames)-1]
 		nextFrame := image.NewRGBA(prevFrame.Bounds())
-		draw.Src.Draw(
-			nextFrame,
-			nextFrame.Bounds(),
-			prevFrame,
-			image.Point{},
-		)
+		combinePrevious := func() {
+			draw.Src.Draw(
+				nextFrame,
+				nextFrame.Bounds(),
+				prevFrame,
+				image.Point{},
+			)
+		}
+		switch pd := prevFrame.disposalMethod; pd {
+		case gif.DisposalBackground:
+			// NOTE Modern tools interpret this is "clear to transparent", so do nothing
+		case gif.DisposalNone:
+			fallthrough
+		default:
+			combinePrevious()
+		}
 		draw.Over.Draw(nextFrame, nextFrame.Bounds(), v, image.Point{})
 		frames = append(frames, Frame{
 			nextFrame,

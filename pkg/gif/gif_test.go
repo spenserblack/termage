@@ -118,6 +118,89 @@ func TestSpinning2x2(t *testing.T) {
 	}
 }
 
+// TestUnknownDisposal loads an animated GIF and checks that it combines when
+// the disposal method is unknown.
+func TestUnknownDisposal(t *testing.T) {
+	f, err := os.Open(getResource("spinning-2x2.gif"))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	g, err := gif.DecodeAll(f)
+	if err != nil {
+		panic(err)
+	}
+	g.Disposal[0] = 0xFF // NOTE Unknown disposal
+	gifHelper, err := NewHelper(g)
+	if err != nil {
+		t.Fatalf(`err = %v, want nil`, err)
+	}
+
+	frame1WantColors := [][]color.Color{
+		{color.Black, color.White},
+		{color.White, color.White},
+	}
+
+	for y, row := range frame1WantColors {
+		for x, c := range row {
+			r, g, b, a := gifHelper.Frames[1].At(x, y).RGBA()
+			wr, wg, wb, wa := c.RGBA()
+			if r != wr || g != wg || b != wb || a != wa {
+				t.Errorf(
+					`Frame 1 @ (%d, %d): RGBA = %v %v %v %v, want %v %v %v %v`,
+					x, y,
+					r, g, b, a,
+					wr, wg, wb, wa,
+				)
+			}
+		}
+	}
+}
+
+// TestReplace2x2 Tests that the frames of the replace directive are properly generated.
+func TestReplace2x2(t *testing.T) {
+	f, err := os.Open(getResource("replace-2x2.gif"))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	gifHelper, err := HelperFromReader(f)
+	if err != nil {
+		t.Fatalf(`err = %v, want nil`, err)
+	}
+
+	if r, g, b, _ := gifHelper.Frames[1].At(0, 0).RGBA(); r != 0 || g != 0 || b != 0 {
+		t.Errorf(`Frame 2 Color @ 0, 0 = rgb(%d,  %d, %d), want rgb(0, 0, 0)`, r, g, b)
+	}
+
+	for _, p := range []image.Point{{1, 0}, {0, 1}, {1, 1}} {
+		if _, _, _, alpha := gifHelper.Frames[1].At(p.X, p.Y).RGBA(); alpha != 0 {
+			t.Errorf(
+				`Frame 2 Alpha @ %d, %d = %d (previous disposal %#02x), want 0`,
+				p.X,
+				p.Y,
+				alpha,
+				gifHelper.Frames[0].disposalMethod,
+			)
+		}
+	}
+	if r, g, b, _ := gifHelper.Frames[2].At(1, 0).RGBA(); r != 0 || g != 0 || b != 0 {
+		t.Errorf(`Frame 3 Color @ 1, 0 = rgb(%d,  %d, %d), want rgb(0, 0, 0)`, r, g, b)
+	}
+
+	for _, p := range []image.Point{{0, 0}, {0, 1}, {1, 1}} {
+		if _, _, _, alpha := gifHelper.Frames[2].At(p.X, p.Y).RGBA(); alpha != 0 {
+			t.Errorf(
+				`Frame 3 Alpha @ %d, %d = %d (previous disposal %#02x), want 0`,
+				p.X,
+				p.Y,
+				alpha,
+				gifHelper.Frames[1].disposalMethod,
+			)
+		}
+	}
+}
+
 // TestAnimationNoLoop loads an animated GIF and checks that it does not loop.
 func TestAnimationNoLoop(t *testing.T) {
 	f, err := os.Open(getResource("spinning-2x2-noloop.gif"))
