@@ -84,31 +84,16 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		loadImage()
 		var (
 			fitZoom, currentZoom        Zoom
-			title                       string                   = <-titleChan
-			currentImage                image.Image              = <-images
+			title                       string
+			currentImage                image.Image
 			stopAnimation               chan struct{}            = make(chan struct{}, 1)
 			nextFrame                   chan conversion.RGBRunes = make(chan conversion.RGBRunes)
 			zoomChan                    chan Zoom                = make(chan Zoom)
 			rgbRunes                    conversion.RGBRunes
 			currentWidth, currentHeight int
-			maxWidth, maxHeight         int = Screen.Size()
 		)
 		zoomGif := func() {
 			zoomChan <- currentZoom
-		}
-		maxWidth = int(float32(maxWidth) / pixelHeight)
-		if maxWidth < maxHeight {
-			currentZoom = Zoom(uint(maxWidth) * 100 / uint(currentImage.Bounds().Max.X))
-		} else {
-			currentZoom = Zoom(uint(maxHeight) * 100 / uint(currentImage.Bounds().Max.Y))
-		}
-		if currentZoom > 100 {
-			currentZoom = 100
-		}
-		fitZoom = currentZoom
-		if g, ok := currentImage.(*gif.Helper); ok {
-			go AnimateGif(g, nextFrame, stopAnimation, zoomChan)
-			go zoomGif()
 		}
 		for {
 			select {
@@ -177,6 +162,9 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				yMod = 0
 				maxWidth, maxHeight := Screen.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
+				if currentImage == nil {
+					break
+				}
 				if maxWidth < maxHeight {
 					currentZoom = Zoom(maxWidth * 100 / currentImage.Bounds().Max.X)
 				} else {
