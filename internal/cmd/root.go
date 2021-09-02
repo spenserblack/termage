@@ -55,6 +55,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		xMod, yMod int
 		images     chan image.Image = make(chan image.Image, 1)
 		titleChan  chan string      = make(chan string, 1)
+		errChan    chan error       = make(chan error, 1)
 		doRedraw   chan struct{}    = make(chan struct{}, 1)
 		shiftImg   chan Shift       = make(chan Shift)
 		resetImg   chan struct{}    = make(chan struct{})
@@ -73,10 +74,11 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 
 	loadImage := func() {
 		m, title, err := utils.LoadImage(browser.Current())
-		if err != nil && err != utils.ErrNotAnimated {
-			log.Fatal(err)
-		}
 		titleChan <- title
+		if err != nil && err != utils.ErrNotAnimated {
+			errChan <- err
+			return
+		}
 		images <- m
 	}
 
@@ -125,6 +127,11 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case title = <-titleChan:
+			case err := <-errChan:
+				Screen.Clear()
+				draw.Title(Screen, title)
+				draw.Error(Screen, err)
+				Screen.Show()
 			case <-doRedraw:
 				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomIn:
