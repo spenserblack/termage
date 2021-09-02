@@ -29,6 +29,7 @@ func LoadImage(filename string) (m image.Image, title string, err error) {
 
 	m, format, err := decode(reader)
 	if err != nil {
+		title = filepath.Base(filename)
 		err = fmt.Errorf("Couldn't decode %q: %w", filename, err)
 		return
 	}
