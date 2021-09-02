@@ -41,7 +41,7 @@ var (
 			ImageFiles = args
 			mainFunc(ImageFiles, Supported)
 		},
-		Version: "0.6.0",
+		Version: "0.6.2",
 	}
 )
 
