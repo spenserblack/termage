@@ -56,3 +56,26 @@ func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 		}
 	}
 }
+
+// Error draws an error to the screen.
+//
+// An error should be drawn if an image *cannot* be drawn. An error should not
+// be drawn *over* an image.
+func Error(s tcell.Screen, err error) {
+	status := "cannot draw:"
+	errStr := err.Error()
+	width, height := s.Size()
+
+	xOrigin := width / 2
+	yOrigin := (height - TitleBarPixels) / 2
+
+	statusStart := xOrigin - (len(status) / 2)
+	for i, r := range []rune(status) {
+		s.SetContent(statusStart+i, yOrigin+TitleBarPixels-1, r, nil, tcell.StyleDefault)
+	}
+
+	errStart := xOrigin - (len(errStr) / 2)
+	for i, r := range []rune(errStr) {
+		s.SetContent(errStart+i, yOrigin+TitleBarPixels, r, nil, tcell.StyleDefault)
+	}
+}

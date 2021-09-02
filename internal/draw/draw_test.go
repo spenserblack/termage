@@ -1,6 +1,7 @@
 package draw
 
 import (
+	"errors"
 	"image"
 	_ "image/png" // Register PNGs for tests
 	"os"
@@ -152,6 +153,30 @@ func TestDrawImageOverlapTitle(t *testing.T) {
 	}
 	if actual, expected := s.pixels[1][2].mainc, '█'; actual != expected {
 		t.Errorf(`rune @ 2, 1 = %q, want %q`, actual, expected)
+	}
+}
+
+// TestDrawError checks that an error message can be drawn to the screen.
+func TestDrawError(t *testing.T) {
+	s := NewMockScreen(12, 11)
+	// TODO line 5 "cannot draw:"
+	// TODO line 6 error message
+	Error(s, errors.New("test"))
+
+	statusLine := make([]rune, 0, 12)
+	for _, p := range s.pixels[5] {
+		statusLine = append(statusLine, p.mainc)
+	}
+	if actual, expected := string(statusLine), "cannot draw:"; actual != expected {
+		t.Errorf(`Status line = %q, want %q`, actual, expected)
+	}
+
+	errorLine := make([]rune, 0, 12)
+	for _, p := range s.pixels[6] {
+		errorLine = append(errorLine, p.mainc)
+	}
+	if actual, expected := string(errorLine), "    test    "; actual != expected {
+		t.Errorf(`Error line = %q, want %q`, actual, expected)
 	}
 }
 
