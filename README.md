@@ -1,5 +1,6 @@
 # termage
 
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/spenserblack/termage)
 [![CI](https://github.com/spenserblack/termage/actions/workflows/ci.yml/badge.svg)](https://github.com/spenserblack/termage/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spenserblack/termage)](https://goreportcard.com/report/github.com/spenserblack/termage)
 [![codecov](https://codecov.io/gh/spenserblack/termage/branch/master/graph/badge.svg)](https://codecov.io/gh/spenserblack/termage)
