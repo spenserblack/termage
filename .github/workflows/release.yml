@@ -20,14 +20,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 2
-      - name: Get Version
-        run: echo "::set-output name=VERSION::$(git describe --tags)"
-        id: version
-      - name: Get Output Filename
-        run: echo "::set-output name=FILENAME::termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}"
-        id: filename
+      - name: Set Variables
+        id: variables
+        uses: spenserblack/actions-set-output@v0.1
+        with: |
+          VERSION=$(git describe --tags)
+          FILENAME=termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
       - name: Build
-        run: go build -o "${{ steps.filename.outputs.FILENAME }}" -ldflags "-X main.version=${{ steps.version.outputs.VERSION }}" termage.go
+        run: go build -o "${{ steps.variables.outputs.FILENAME }}" -ldflags "-X main.version=${{ steps.variables.outputs.VERSION }}" termage.go
       - uses: softprops/action-gh-release@v1
         with:
           files: ${{ steps.filename.outputs.FILENAME }}
