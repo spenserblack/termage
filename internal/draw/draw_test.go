@@ -89,6 +89,31 @@ func TestDrawTitle(t *testing.T) {
 	}
 }
 
+// TestDrawMultilineTitle checks that a title cannot fit in one line will get
+// wrapped to the next line.
+func TestDrawMultilineTitle(t *testing.T) {
+	const width int = 7
+	s := NewMockScreen(width, 4)
+	Title(s, "11111 222")
+	var (
+		row1 = make([]rune, width, width)
+		row2 = make([]rune, width, width)
+	)
+	for i, p := range s.pixels[0] {
+		row1[i] = p.mainc
+	}
+	for i, p := range s.pixels[1] {
+		row2[i] = p.mainc
+	}
+
+	if actual, expected := string(row1), " 11111 "; actual != expected {
+		t.Errorf(`Row 1 = %q, want %q`, actual, expected)
+	}
+	if actual, expected := string(row2), "  222  "; actual != expected {
+		t.Errorf(`Row 2 = %q, want %q`, actual, expected)
+	}
+}
+
 // TestDrawImage checks that a standard image fitting the screen can be drawn.
 func TestDrawImage(t *testing.T) {
 	f, err := os.Open(getResource("black-and-transparent-2x2.png"))
