@@ -236,6 +236,9 @@ func (s *MockScreen) GetContent(x, y int) (
 }
 
 func (s *MockScreen) SetContent(x int, y int, mainc rune, combc []rune, style tcell.Style) {
+	if x < 0 || x >= s.width || y < 0 || y >= s.height {
+		return
+	}
 	s.pixels[y][x].mainc = mainc
 	s.pixels[y][x].combc = combc
 	s.pixels[y][x].style = style
