@@ -5,6 +5,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/spenserblack/termage)](https://goreportcard.com/report/github.com/spenserblack/termage)
 [![codecov](https://codecov.io/gh/spenserblack/termage/branch/master/graph/badge.svg)](https://codecov.io/gh/spenserblack/termage)
 
+![GitHub all releases](https://img.shields.io/github/downloads/spenserblack/termage/total)
+
 Browse images in the terminal *with support for animated GIFs :tada:*
 
 ## Pre-built Binaries
