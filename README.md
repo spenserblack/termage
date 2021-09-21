@@ -5,13 +5,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/spenserblack/termage)](https://goreportcard.com/report/github.com/spenserblack/termage)
 [![codecov](https://codecov.io/gh/spenserblack/termage/branch/master/graph/badge.svg)](https://codecov.io/gh/spenserblack/termage)
 
-![GitHub all releases](https://img.shields.io/github/downloads/spenserblack/termage/total)
+[![GitHub all releases](https://img.shields.io/github/downloads/spenserblack/termage/total)][latest-release]
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
 ## Pre-built Binaries
 
-Pre-built binaries can be downloaded from the [latest release](https://github.com/spenserblack/termage/releases/latest).
+Pre-built binaries can be downloaded from the [latest release][latest-release].
 
 ## Installation From Source
 
@@ -91,3 +91,5 @@ termage path/to/image1 path/to/image2 # ...
 - PNG
 - JPEG
 - GIF
+
+[latest-release]: https://github.com/spenserblack/termage/releases/latest
