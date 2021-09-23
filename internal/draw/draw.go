@@ -4,12 +4,13 @@ import (
 	"image"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/spenserblack/go-wordwrap"
 
 	"github.com/spenserblack/termage/internal/conversion"
 )
 
 // TitleBarPixels is the height of the title bar in "pixels"
-const TitleBarPixels int = 1
+var TitleBarPixels int = 1
 
 func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center image.Point) {
 	s.Clear()
@@ -20,12 +21,16 @@ func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center i
 
 // Title draws an image title to a screen.
 func Title(s tcell.Screen, title string) {
-	runes := []rune(title)
 	width, _ := s.Size()
 	center := width / 2
-	runesStart := center - (len(runes) / 2)
-	for i, r := range runes {
-		s.SetContent(runesStart+i, 0, r, nil, tcell.StyleDefault)
+	lines := wordwrap.WordWrap(title, width)
+	TitleBarPixels = len(lines)
+	for row, line := range lines {
+		runes := []rune(line)
+		runesStart := center - (len(runes) / 2)
+		for i, r := range runes {
+			s.SetContent(runesStart+i, row, r, nil, tcell.StyleDefault)
+		}
 	}
 }
 
