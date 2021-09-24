@@ -114,6 +114,32 @@ func TestDrawMultilineTitle(t *testing.T) {
 	}
 }
 
+// TestDrawMultipleTitles checks that a title can be drawn over another title
+// without retaining any artifacts from the old title.
+func TestDrawMultipleTitles(t *testing.T) {
+	const width int = 5
+	s := NewMockScreen(width, 4)
+	Title(s, "aaaaa b")
+	Title(s, "foo bar")
+	var (
+		row1 = make([]rune, width, width)
+		row2 = make([]rune, width, width)
+	)
+	for i, p := range s.pixels[0] {
+		row1[i] = p.mainc
+	}
+	for i, p := range s.pixels[1] {
+		row2[i] = p.mainc
+	}
+
+	if actual, expected := string(row1), " foo "; actual != expected {
+		t.Errorf(`Row 1 = %q, want %q`, actual, expected)
+	}
+	if actual, expected := string(row2), " bar "; actual != expected {
+		t.Errorf(`Row 2 = %q, want %q`, actual, expected)
+	}
+}
+
 // TestDrawImage checks that a standard image fitting the screen can be drawn.
 func TestDrawImage(t *testing.T) {
 	f, err := os.Open(getResource("black-and-transparent-2x2.png"))
