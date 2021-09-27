@@ -21,6 +21,7 @@ func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center i
 
 // Title draws an image title to a screen.
 func Title(s tcell.Screen, title string) {
+	clearRow(s, 0, TitleBarPixels)
 	width, _ := s.Size()
 	center := width / 2
 	lines := wordwrap.WordWrap(title, width)
@@ -82,5 +83,15 @@ func Error(s tcell.Screen, err error) {
 	errStart := xOrigin - (len(errStr) / 2)
 	for i, r := range []rune(errStr) {
 		s.SetContent(errStart+i, yOrigin+TitleBarPixels, r, nil, tcell.StyleDefault)
+	}
+}
+
+// ClearRow clears a single row of a Screen.
+func clearRow(s tcell.Screen, start, end int) {
+	width, _ := s.Size()
+	for row := start; row <= end; row++ {
+		for cell := 0; cell < width; cell++ {
+			s.SetContent(cell, row, ' ', nil, tcell.StyleDefault)
+		}
 	}
 }
