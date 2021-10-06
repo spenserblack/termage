@@ -7,7 +7,7 @@
 
 [![GitHub all releases](https://img.shields.io/github/downloads/spenserblack/termage/total)][latest-release]
 
-Browse images in the terminal _with support for animated GIFs :tada:_
+Browse images in the terminal *with support for animated GIFs :tada:*
 
 ## Pre-built Binaries
 
