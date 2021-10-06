@@ -9,6 +9,16 @@
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
+## Usage Examples
+
+### PNG image
+
+<img src="./_resources/viewing_png.png" width="200">
+
+### Animated GIF
+
+<img src="./_resources/viewing_gif.gif" width="200">
+
 ## Pre-built Binaries
 
 Pre-built binaries can be downloaded from the [latest release][latest-release].
@@ -94,13 +104,3 @@ termage path/to/image1 path/to/image2 # ...
 - GIF
 
 [latest-release]: https://github.com/spenserblack/termage/releases/latest
-
-## Usage Examples
-
-### PNG image
-
-![Viewing a PNG image](./_resources/viewing_png.png "PNG image")
-
-### Animated GIF
-
-![Viewing an animated GIF](./_resources/viewing_gif.gif "Animated GIF")
