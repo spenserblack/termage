@@ -13,11 +13,11 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 ### PNG image
 
-<img src="./_resources/viewing_png.png" width="200">
+<img src="./_resources/viewing_png.png" width="300">
 
 ### Animated GIF
 
-<img src="./_resources/viewing_gif.gif" width="200">
+<img src="./_resources/viewing_gif.gif" width="300">
 
 ## Pre-built Binaries
 
