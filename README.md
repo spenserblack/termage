@@ -47,7 +47,6 @@ Invoke-WebRequest "https://raw.githubusercontent.com/spenserblack/termage/HEAD/i
 ```sh
 go get -u github.com/spenserblack/termage
 ```
-
 ```sh
 go install github.com/spenserblack/termage@latest
 ```
