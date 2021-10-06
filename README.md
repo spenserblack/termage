@@ -99,8 +99,8 @@ termage path/to/image1 path/to/image2 # ...
 
 ### PNG image
 
-![Viewing a PNG image](./_resources/png_image.png "PNG image")
+![Viewing a PNG image](./_resources/viewing_png.png "PNG image")
 
 ### Animated GIF
 
-![Viewing an animated GIF](./_resources/animated.gif "Animated GIF")
+![Viewing an animated GIF](./_resources/viewing_gif.gif "Animated GIF")
