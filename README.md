@@ -7,7 +7,7 @@
 
 [![GitHub all releases](https://img.shields.io/github/downloads/spenserblack/termage/total)][latest-release]
 
-Browse images in the terminal *with support for animated GIFs :tada:*
+Browse images in the terminal _with support for animated GIFs :tada:_
 
 ## Pre-built Binaries
 
@@ -37,6 +37,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/spenserblack/termage/HEAD/i
 ```sh
 go get -u github.com/spenserblack/termage
 ```
+
 ```sh
 go install github.com/spenserblack/termage@latest
 ```
@@ -93,3 +94,13 @@ termage path/to/image1 path/to/image2 # ...
 - GIF
 
 [latest-release]: https://github.com/spenserblack/termage/releases/latest
+
+## Usage Examples
+
+### PNG image
+
+![Viewing a PNG image](./_resources/png_image.png "PNG image")
+
+### Animated GIF
+
+![Viewing an animated GIF](./_resources/animated.gif "Animated GIF")
