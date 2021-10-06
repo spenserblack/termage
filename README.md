@@ -9,6 +9,16 @@
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
+## Usage Examples
+
+### PNG image
+
+![Viewing a PNG image](./_resources/viewing_png.png "PNG image")
+
+### Animated GIF
+
+![Viewing an animated GIF](./_resources/viewing_gif.gif "Animated GIF")
+
 ## Pre-built Binaries
 
 Pre-built binaries can be downloaded from the [latest release][latest-release].
@@ -37,6 +47,7 @@ Invoke-WebRequest "https://raw.githubusercontent.com/spenserblack/termage/HEAD/i
 ```sh
 go get -u github.com/spenserblack/termage
 ```
+
 ```sh
 go install github.com/spenserblack/termage@latest
 ```
