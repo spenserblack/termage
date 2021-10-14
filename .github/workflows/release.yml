@@ -4,8 +4,26 @@ on:
     tags: ['v*.*.*']
 
 jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.output-step.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - uses: spenserblack/actions-set-output@v1
+        id: output-step
+        with:
+          variables: |
+            VERSION=$(git describe --tags)
+
   build:
     runs-on: ${{ matrix.os }}
+    needs: get-version
+    env:
+      TERMAGE_VERSION: ${{ needs.get-version.outputs.VERSION }}
+      OUTPUT_FILENAME: termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
     strategy:
       matrix:
         os:
@@ -18,16 +36,8 @@ jobs:
         with:
           go-version: 1.16
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-      - name: Set Variables
-        id: variables
-        uses: spenserblack/actions-set-output@v1
-        with: |
-          VERSION=$(git describe --tags)
-          FILENAME=termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
       - name: Build
-        run: go build -o "${{ steps.variables.outputs.FILENAME }}" -ldflags "-X main.version=${{ steps.variables.outputs.VERSION }}" termage.go
+        run: go build -o "${{ env.OUTPUT_FILENAME }}" -ldflags "-X main.version=${{ env.TERMAGE_VERSION }}" termage.go
       - uses: softprops/action-gh-release@v1
         with:
-          files: ${{ steps.filename.outputs.FILENAME }}
+          files: ${{ env.OUTPUT_FILENAME }}
