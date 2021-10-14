@@ -19,17 +19,17 @@ jobs:
             VERSION=$(git describe --tags)
 
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     needs: get-version
     env:
       TERMAGE_VERSION: ${{ needs.get-version.outputs.VERSION }}
-      OUTPUT_FILENAME: termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+      OUTPUT_FILENAME: termage-${{ matrix.os }}-${{ needs.get-version.outputs.VERSION }}${{ matrix.os == 'windows' && '.exe' || '' }}
     strategy:
       matrix:
         os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+          - ubuntu
+          - windows
+          - macos
 
     steps:
       - uses: actions/setup-go@v2
