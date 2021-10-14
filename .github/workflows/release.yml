@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 2
       - name: Set Variables
         id: variables
-        uses: spenserblack/actions-set-output@v0.1
+        uses: spenserblack/actions-set-output@v1
         with: |
           VERSION=$(git describe --tags)
           FILENAME=termage-${{ matrix.os }}${{ matrix.os == 'windows-latest' && '.exe' || '' }}
