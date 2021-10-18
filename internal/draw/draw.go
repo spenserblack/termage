@@ -32,6 +32,7 @@ func Title(s tcell.Screen, title string) {
 			s.SetContent(runesStart+i, row, r, nil, tcell.StyleDefault)
 		}
 	}
+	s.Show()
 }
 
 // Image draws an image to a screen.
@@ -41,6 +42,7 @@ func Title(s tcell.Screen, title string) {
 func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 	width, height := rgbRunes.Width(), rgbRunes.Height()
 	screenWidth, screenHeight := s.Size()
+	clearRow(s, TitleBarPixels+1, screenHeight)
 	xOrigin := screenWidth / 2
 	yOrigin := (screenHeight - TitleBarPixels) / 2
 	for x := 0; x < width; x++ {
@@ -60,6 +62,7 @@ func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 			)
 		}
 	}
+	s.Show()
 }
 
 // Error draws an error to the screen.
