@@ -10,7 +10,7 @@ import (
 )
 
 // TitleBarPixels is the height of the title bar in "pixels"
-var TitleBarPixels int = 1
+const TitleBarPixels int = 3
 
 func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center image.Point) {
 	s.Clear()
@@ -25,7 +25,6 @@ func Title(s tcell.Screen, title string) {
 	width, _ := s.Size()
 	center := width / 2
 	lines := wordwrap.WordWrap(title, width)
-	TitleBarPixels = len(lines)
 	for row, line := range lines {
 		runes := []rune(line)
 		runesStart := center - (len(runes) / 2)

@@ -26,7 +26,7 @@ func TestRedraw(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	s := NewMockScreen(4, 5)
+	s := NewMockScreen(4, 7)
 	runes := conversion.RGBRunesFromImage(i)
 	Title(s, "test")
 	Image(s, runes, image.Point{1, 1})
@@ -48,7 +48,7 @@ func TestRedraw(t *testing.T) {
 		{' ', ' ', ' ', ' '},
 	}
 
-	for y, row := range s.pixels[1:] {
+	for y, row := range s.pixels[3:] {
 		for x, pixel := range row {
 			if actual, expected := pixel.mainc, expectedImage[x][y]; actual != expected {
 				t.Errorf(`pixel (%d, %d) = %q, want %q`, x, y, actual, expected)
@@ -60,7 +60,7 @@ func TestRedraw(t *testing.T) {
 // TestDrawTitle checks that the title would be properly drawn at the top-
 // center of the screen.
 func TestDrawTitle(t *testing.T) {
-	s := NewMockScreen(10, 3)
+	s := NewMockScreen(10, 5)
 	Title(s, "test")
 	fail := false
 	if actual := s.pixels[0][3].mainc; actual != 't' {
@@ -93,7 +93,7 @@ func TestDrawTitle(t *testing.T) {
 // wrapped to the next line.
 func TestDrawMultilineTitle(t *testing.T) {
 	const width int = 7
-	s := NewMockScreen(width, 4)
+	s := NewMockScreen(width, 6)
 	Title(s, "11111 222")
 	var (
 		row1 = make([]rune, width, width)
@@ -118,7 +118,7 @@ func TestDrawMultilineTitle(t *testing.T) {
 // without retaining any artifacts from the old title.
 func TestDrawMultipleTitles(t *testing.T) {
 	const width int = 5
-	s := NewMockScreen(width, 4)
+	s := NewMockScreen(width, 6)
 	Title(s, "aaaaa b")
 	Title(s, "foo bar")
 	var (
@@ -151,28 +151,28 @@ func TestDrawImage(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	s := NewMockScreen(4, 5)
+	s := NewMockScreen(4, 7)
 	Image(s, conversion.RGBRunesFromImage(i), image.Point{0, 0})
 
-	if actual, expected := s.pixels[2][1].mainc, '█'; actual != expected {
-		t.Errorf(`rune @ 1, 2 = %q, want %q`, actual, expected)
+	if actual, expected := s.pixels[4][1].mainc, '█'; actual != expected {
+		t.Errorf(`rune @ 1, 4 = %q, want %q`, actual, expected)
 	}
-	if actual, expected := s.pixels[2][2].mainc, ' '; actual != expected {
-		t.Errorf(`rune @ 2, 2 = %q, want %q`, actual, expected)
+	if actual, expected := s.pixels[4][2].mainc, ' '; actual != expected {
+		t.Errorf(`rune @ 2, 4 = %q, want %q`, actual, expected)
 	}
-	if actual, expected := s.pixels[3][1].mainc, ' '; actual != expected {
-		t.Errorf(`rune @ 1, 3 = %q, want %q`, actual, expected)
+	if actual, expected := s.pixels[5][1].mainc, ' '; actual != expected {
+		t.Errorf(`rune @ 1, 5 = %q, want %q`, actual, expected)
 	}
-	if actual, expected := s.pixels[3][2].mainc, '█'; actual != expected {
-		t.Errorf(`rune @ 2, 3 = %q, want %q`, actual, expected)
+	if actual, expected := s.pixels[5][2].mainc, '█'; actual != expected {
+		t.Errorf(`rune @ 2, 5 = %q, want %q`, actual, expected)
 	}
 
 	var actualForeground tcell.Color
-	actualForeground, _, _ = s.pixels[2][1].style.Decompose()
+	actualForeground, _, _ = s.pixels[4][1].style.Decompose()
 	if actual := actualForeground.Hex(); actual != 0x000000 {
 		t.Errorf(`foreground @ 1, 2 = %v, want %v`, actual, 0x000000)
 	}
-	actualForeground, _, _ = s.pixels[3][2].style.Decompose()
+	actualForeground, _, _ = s.pixels[5][2].style.Decompose()
 	if actual := actualForeground.Hex(); actual != 0x000000 {
 		t.Errorf(`foreground @ 2, 3 = %v, want %v`, actual, 0x000000)
 	}
@@ -190,7 +190,7 @@ func TestDrawImageOverlapTitle(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	s := NewMockScreen(4, 5)
+	s := NewMockScreen(4, 7)
 	Title(s, "test")
 	Image(s, conversion.RGBRunesFromImage(i), image.Point{0, -2})
 
@@ -199,23 +199,23 @@ func TestDrawImageOverlapTitle(t *testing.T) {
 			t.Errorf(`Title bar rune %d = %v, want %v`, x, actual, r)
 		}
 	}
-	if actual, expected := s.pixels[1][1].mainc, ' '; actual != expected {
-		t.Errorf(`rune @ 1, 1 = %q, want %q`, actual, expected)
+	if actual, expected := s.pixels[3][1].mainc, ' '; actual != expected {
+		t.Errorf(`rune @ 1, 3 = %q, want %q`, actual, expected)
 	}
-	if actual, expected := s.pixels[1][2].mainc, '█'; actual != expected {
-		t.Errorf(`rune @ 2, 1 = %q, want %q`, actual, expected)
+	if actual, expected := s.pixels[3][2].mainc, '█'; actual != expected {
+		t.Errorf(`rune @ 2, 3 = %q, want %q`, actual, expected)
 	}
 }
 
 // TestDrawError checks that an error message can be drawn to the screen.
 func TestDrawError(t *testing.T) {
-	s := NewMockScreen(12, 11)
+	s := NewMockScreen(12, 13)
 	// TODO line 5 "cannot draw:"
 	// TODO line 6 error message
 	Error(s, errors.New("test"))
 
 	statusLine := make([]rune, 0, 12)
-	for _, p := range s.pixels[5] {
+	for _, p := range s.pixels[7] {
 		statusLine = append(statusLine, p.mainc)
 	}
 	if actual, expected := string(statusLine), "cannot draw:"; actual != expected {
@@ -223,7 +223,7 @@ func TestDrawError(t *testing.T) {
 	}
 
 	errorLine := make([]rune, 0, 12)
-	for _, p := range s.pixels[6] {
+	for _, p := range s.pixels[8] {
 		errorLine = append(errorLine, p.mainc)
 	}
 	if actual, expected := string(errorLine), "    test    "; actual != expected {
