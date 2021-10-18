@@ -10,7 +10,7 @@ import (
 )
 
 // TitleBarPixels is the height of the title bar in "pixels"
-var TitleBarPixels int = 1
+const TitleBarPixels int = 3
 
 func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center image.Point) {
 	s.Clear()
@@ -21,10 +21,10 @@ func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center i
 
 // Title draws an image title to a screen.
 func Title(s tcell.Screen, title string) {
+	clearRow(s, 0, TitleBarPixels)
 	width, _ := s.Size()
 	center := width / 2
 	lines := wordwrap.WordWrap(title, width)
-	TitleBarPixels = len(lines)
 	for row, line := range lines {
 		runes := []rune(line)
 		runesStart := center - (len(runes) / 2)
@@ -32,6 +32,7 @@ func Title(s tcell.Screen, title string) {
 			s.SetContent(runesStart+i, row, r, nil, tcell.StyleDefault)
 		}
 	}
+	s.Show()
 }
 
 // Image draws an image to a screen.
@@ -41,6 +42,7 @@ func Title(s tcell.Screen, title string) {
 func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 	width, height := rgbRunes.Width(), rgbRunes.Height()
 	screenWidth, screenHeight := s.Size()
+	clearRow(s, TitleBarPixels+1, screenHeight)
 	xOrigin := screenWidth / 2
 	yOrigin := (screenHeight - TitleBarPixels) / 2
 	for x := 0; x < width; x++ {
@@ -60,6 +62,7 @@ func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 			)
 		}
 	}
+	s.Show()
 }
 
 // Error draws an error to the screen.
@@ -82,5 +85,15 @@ func Error(s tcell.Screen, err error) {
 	errStart := xOrigin - (len(errStr) / 2)
 	for i, r := range []rune(errStr) {
 		s.SetContent(errStart+i, yOrigin+TitleBarPixels, r, nil, tcell.StyleDefault)
+	}
+}
+
+// ClearRow clears a single row of a Screen.
+func clearRow(s tcell.Screen, start, end int) {
+	width, _ := s.Size()
+	for row := start; row <= end; row++ {
+		for cell := 0; cell < width; cell++ {
+			s.SetContent(cell, row, ' ', nil, tcell.StyleDefault)
+		}
 	}
 }

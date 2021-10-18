@@ -125,15 +125,15 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
+				draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
 			case title = <-titleChan:
+				draw.Title(Screen, title)
 			case err := <-errChan:
 				Screen.Clear()
-				draw.Title(Screen, title)
 				draw.Error(Screen, err)
 				Screen.Show()
 			case <-doRedraw:
-				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
+				draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomIn:
 				if currentZoom < fitZoom && fitZoom < currentZoom+10 {
 					currentZoom = fitZoom
@@ -147,7 +147,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
+				draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
 			case <-zoomOut:
 				if currentZoom < 11 {
 					currentZoom = 1
@@ -163,7 +163,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 				resizedImage := currentZoom.TransImage(currentImage)
 				rgbRunes = conversion.RGBRunesFromImage(resizedImage)
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
-				draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
+				draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
 			case <-resetImg:
 				xMod = 0
 				yMod = 0
@@ -216,7 +216,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 					}
 				}
 			case frame := <-nextFrame:
-				go draw.Redraw(Screen, title, rgbRunes, image.Point{xMod, yMod})
+				go draw.Image(Screen, rgbRunes, image.Point{xMod, yMod})
 				rgbRunes = frame
 				currentWidth, currentHeight = rgbRunes.Width(), rgbRunes.Height()
 			}
