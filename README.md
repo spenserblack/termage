@@ -19,37 +19,20 @@ Browse images in the terminal *with support for animated GIFs :tada:*
 
 ![Viewing an animated GIF](./_resources/viewing_gif.gif "Animated GIF")
 
-## Pre-built Binaries
+## Installation
 
-Pre-built binaries can be downloaded from the [latest release][latest-release].
+The following commands simplify installing from the [latest release][latest-release].
 
-## Installation From Source
-
-### Preferred Method
-
-This method is preferred because it will set the most accurate version info that will be printed
-when using the `--version` argument.
-
-#### Unix
+### Linux/MacOS
 
 ```shell
-curl https://raw.githubusercontent.com/spenserblack/termage/HEAD/install.sh | sh
+curl https://raw.githubusercontent.com/spenserblack/termage/HEAD/install.sh | bash
 ```
 
-#### PowerShell
+### PowerShell
 
 ```powershell
 Invoke-WebRequest "https://raw.githubusercontent.com/spenserblack/termage/HEAD/install.ps1" | Invoke-Expression
-```
-
-### Other Methods
-
-```sh
-go get -u github.com/spenserblack/termage
-```
-
-```sh
-go install github.com/spenserblack/termage@latest
 ```
 
 ## Usage
