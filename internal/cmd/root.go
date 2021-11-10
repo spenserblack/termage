@@ -59,7 +59,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		doRedraw    chan struct{}    = make(chan struct{}, 1)
 		shiftImg    chan Shift       = make(chan Shift)
 		resetImg    chan struct{}    = make(chan struct{})
-		resetScreen chan struct{}    = make(chan struct{}, 1)
+		resetScreen chan struct{}    = make(chan struct{})
 		zoomIn      chan struct{}    = make(chan struct{})
 		zoomOut     chan struct{}    = make(chan struct{})
 	)
@@ -85,7 +85,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	}
 
 	go func() {
-		loadImage()
+		go loadImage()
 		var (
 			fitZoom, currentZoom        Zoom
 			title                       string
