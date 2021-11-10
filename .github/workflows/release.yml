@@ -5,6 +5,7 @@ on:
 
 jobs:
   get-version:
+    name: Get Version
     runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.version.outputs.VERSION }}
@@ -18,6 +19,7 @@ jobs:
 
 
   release-notes:
+    name: Add Release Notes
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -33,7 +35,8 @@ jobs:
         with:
           body_path: RELEASE_NOTES
 
-  build:
+  release-assets:
+    name: Upload Release Assets
     runs-on: ${{ matrix.os }}-latest
     permissions:
       contents: write
