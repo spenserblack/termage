@@ -19,6 +19,8 @@ jobs:
 
   release-notes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v2
@@ -33,6 +35,8 @@ jobs:
 
   build:
     runs-on: ${{ matrix.os }}-latest
+    permissions:
+      contents: write
     needs:
       - get-version
       - release-notes
