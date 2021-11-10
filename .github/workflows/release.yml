@@ -25,10 +25,11 @@ jobs:
     needs: set-variables
 
     steps:
+      - run: echo "${{ needs.set-variables.outputs.RELEASE_NOTES }}" > RELEASE_NOTES
       - name: Set Release Notes
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ needs.set-variables.outputs.RELEASE_NOTES }}
+          body_path: RELEASE_NOTES
 
   build:
     runs-on: ${{ matrix.os }}-latest
