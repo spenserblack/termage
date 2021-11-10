@@ -4,10 +4,11 @@ on:
     tags: ['v*.*.*']
 
 jobs:
-  get-version:
+  set-variables:
     runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.output-step.outputs.VERSION }}
+      RELEASE_NOTES: ${{ steps.output-step.outputs.RELEASE_NOTES }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -17,12 +18,23 @@ jobs:
         with:
           variables: |
             VERSION=$(git describe --tags)
+            RELEASE_NOTES=$(git tag -l --format="%(contents:body)" ${{ github.GITHUB_REF }})
+
+  release-notes:
+    runs-on: ubuntu-latest
+    needs: set-variables
+
+    steps:
+      - name: Set Release Notes
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ needs.set-variables.outputs.RELEASE_NOTES }}
 
   build:
     runs-on: ${{ matrix.os }}-latest
-    needs: get-version
+    needs: set-variables
     env:
-      TERMAGE_VERSION: ${{ needs.get-version.outputs.VERSION }}
+      TERMAGE_VERSION: ${{ needs.set-variables.outputs.VERSION }}
       OUTPUT_FILENAME: termage-${{ matrix.os }}${{ matrix.os == 'windows' && '.exe' || '' }}
     strategy:
       matrix:
@@ -38,6 +50,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build
         run: go build -o "${{ env.OUTPUT_FILENAME }}" -ldflags "-X main.version=${{ env.TERMAGE_VERSION }}" termage.go
-      - uses: softprops/action-gh-release@v1
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.OUTPUT_FILENAME }}
