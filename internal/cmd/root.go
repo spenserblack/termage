@@ -52,15 +52,16 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	}
 	var (
 		// Modifiers for x and y coordinates of image
-		xMod, yMod int
-		images     chan image.Image = make(chan image.Image, 1)
-		titleChan  chan string      = make(chan string, 1)
-		errChan    chan error       = make(chan error, 1)
-		doRedraw   chan struct{}    = make(chan struct{}, 1)
-		shiftImg   chan Shift       = make(chan Shift)
-		resetImg   chan struct{}    = make(chan struct{})
-		zoomIn     chan struct{}    = make(chan struct{})
-		zoomOut    chan struct{}    = make(chan struct{})
+		xMod, yMod  int
+		images      chan image.Image = make(chan image.Image, 1)
+		titleChan   chan string      = make(chan string, 1)
+		errChan     chan error       = make(chan error, 1)
+		doRedraw    chan struct{}    = make(chan struct{}, 1)
+		shiftImg    chan Shift       = make(chan Shift)
+		resetImg    chan struct{}    = make(chan struct{})
+		resetScreen chan struct{}    = make(chan struct{})
+		zoomIn      chan struct{}    = make(chan struct{})
+		zoomOut     chan struct{}    = make(chan struct{})
 	)
 
 	Screen, err = tcell.NewScreen()
@@ -73,6 +74,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	Screen.SetStyle(tcell.StyleDefault)
 
 	loadImage := func() {
+		resetScreen <- struct{}{}
 		m, title, err := utils.LoadImage(browser.Current())
 		titleChan <- title
 		if err != nil && err != utils.ErrNotAnimated {
@@ -83,7 +85,7 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	}
 
 	go func() {
-		loadImage()
+		go loadImage()
 		var (
 			fitZoom, currentZoom        Zoom
 			title                       string
@@ -99,12 +101,13 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 		}
 		for {
 			select {
-			case currentImage = <-images:
+			case <-resetScreen:
 				xMod = 0
 				yMod = 0
 				stopAnimation <- struct{}{}
 				stopAnimation = make(chan struct{}, 1)
 				nextFrame = make(chan conversion.RGBRunes)
+			case currentImage = <-images:
 				maxWidth, maxHeight := Screen.Size()
 				maxWidth = int(float32(maxWidth) / pixelHeight)
 				if maxWidth < maxHeight {
