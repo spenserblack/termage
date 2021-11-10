@@ -19,6 +19,11 @@ jobs:
           variables: |
             VERSION=$(git describe --tags)
             RELEASE_NOTES=$(git tag -l --format="%(contents:body)" ${{ env.GITHUB_REF_NAME }})
+      - name: Fail on empty release notes
+        run: |
+          echo "::error ::Empty release notes"
+          exit 1
+        if: ${{ steps.output-step.outputs.RELEASE_NOTES == "" }}
 
   release-notes:
     runs-on: ubuntu-latest
