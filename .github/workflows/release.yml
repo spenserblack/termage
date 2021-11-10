@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "::error ::Empty release notes"
           exit 1
-        if: ${{ steps.release-notes.outputs.RELEASE_NOTES == "" }}
+        if: ${{ steps.release-notes.outputs.RELEASE_NOTES == '' }}
       - name: Set Release Notes
         uses: softprops/action-gh-release@v1
         with:
