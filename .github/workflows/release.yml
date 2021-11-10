@@ -18,7 +18,7 @@ jobs:
         with:
           variables: |
             VERSION=$(git describe --tags)
-            RELEASE_NOTES=$(git tag -l --format="%(contents:body)" ${{ github.GITHUB_REF }})
+            RELEASE_NOTES=$(git tag -l --format="%(contents:body)" ${{ env.GITHUB_REF_NAME }})
 
   release-notes:
     runs-on: ubuntu-latest
