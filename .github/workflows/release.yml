@@ -26,8 +26,6 @@ jobs:
           ref: ${{ github.ref }}
       - name: Get Release Notes
         run: 'echo "$(git tag -l --format="%(contents:body)" $GITHUB_REF_NAME)" > RELEASE_NOTES'
-        id: release-notes
-        if: ${{ steps.release-notes.outputs.RELEASE_NOTES == '' }}
       - name: Set Release Notes
         uses: softprops/action-gh-release@v1
         with:
