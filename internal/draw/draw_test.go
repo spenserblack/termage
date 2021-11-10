@@ -231,6 +231,45 @@ func TestDrawError(t *testing.T) {
 	}
 }
 
+// TestWrapError checks that an error message will be wrapped if it is
+// too large for the screen.
+func TestWrapError(t *testing.T) {
+	s := NewMockScreen(10, 13)
+	Error(s, errors.New("this error is big"))
+
+	var statusLines [2][10]rune
+	for y, row := range s.pixels[7:9] {
+		for x, pixel := range row {
+			statusLines[y][x] = pixel.mainc
+		}
+	}
+	wantStatusLines := [2]string{
+		"  cannot  ",
+		"   draw:  ",
+	}
+	for i, want := range wantStatusLines {
+		if actual := string(statusLines[i][:]); actual != want {
+			t.Errorf(`Status line %d = %q, want %q`, i, actual, want)
+		}
+	}
+
+	var errorLines [2][10]rune
+	for y, row := range s.pixels[9:11] {
+		for x, pixel := range row {
+			errorLines[y][x] = pixel.mainc
+		}
+	}
+	wantErrorLines := [2]string{
+		"this error",
+		"  is big  ",
+	}
+	for i, want := range wantErrorLines {
+		if actual := string(errorLines[i][:]); actual != want {
+			t.Errorf(`Error line %d = %q, want %q`, i, actual, want)
+		}
+	}
+}
+
 type MockScreen struct {
 	width, height int
 	pixels        [][]MockPixel
