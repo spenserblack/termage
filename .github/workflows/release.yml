@@ -4,43 +4,45 @@ on:
     tags: ['v*.*.*']
 
 jobs:
-  set-variables:
-    runs-on: ubuntu-latest
+  get-version:
     outputs:
-      VERSION: ${{ steps.output-step.outputs.VERSION }}
-      RELEASE_NOTES: ${{ steps.output-step.outputs.RELEASE_NOTES }}
+      VERSION: ${{ steps.version.outputs.VERSION }}
+
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 2
-      - uses: spenserblack/actions-set-output@v1
-        id: output-step
+        - run: echo "::set-output name=VERSION::$(git describe --tags)"
+          id: version
+
+
+  release-notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
         with:
-          variables: |
-            VERSION=$(git describe --tags)
-            RELEASE_NOTES=$(git tag -l --format="%(contents:body)" ${{ env.GITHUB_REF_NAME }})
+          ref: ${{ github.ref }}
+      - name: Get Release Notes
+        run: 'echo "::set-output name=RELEASE_NOTES::$(git tag -l --format="%(contents:body)" $GITHUB_REF_NAME)"'
+        id: release-notes
       - name: Fail on empty release notes
         run: |
           echo "::error ::Empty release notes"
           exit 1
-        if: ${{ steps.output-step.outputs.RELEASE_NOTES == "" }}
-
-  release-notes:
-    runs-on: ubuntu-latest
-    needs: set-variables
-
-    steps:
-      - run: echo "${{ needs.set-variables.outputs.RELEASE_NOTES }}" > RELEASE_NOTES
+        if: ${{ steps.release-notes.outputs.RELEASE_NOTES == "" }}
       - name: Set Release Notes
         uses: softprops/action-gh-release@v1
         with:
-          body_path: RELEASE_NOTES
+          body: ${{ steps.release-notes.outputs.RELEASE_NOTES }}
 
   build:
     runs-on: ${{ matrix.os }}-latest
-    needs: set-variables
+    needs:
+      - get-version
+      - release-notes
     env:
-      TERMAGE_VERSION: ${{ needs.set-variables.outputs.VERSION }}
+      TERMAGE_VERSION: ${{ needs.get-version.outputs.VERSION }}
       OUTPUT_FILENAME: termage-${{ matrix.os }}${{ matrix.os == 'windows' && '.exe' || '' }}
     strategy:
       matrix:
