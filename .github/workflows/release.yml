@@ -25,17 +25,13 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Get Release Notes
-        run: 'echo "::set-output name=RELEASE_NOTES::$(git tag -l --format="%(contents:body)" $GITHUB_REF_NAME)"'
+        run: 'echo "$(git tag -l --format="%(contents:body)" $GITHUB_REF_NAME)" > RELEASE_NOTES'
         id: release-notes
-      - name: Fail on empty release notes
-        run: |
-          echo "::error ::Empty release notes"
-          exit 1
         if: ${{ steps.release-notes.outputs.RELEASE_NOTES == '' }}
       - name: Set Release Notes
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ steps.release-notes.outputs.RELEASE_NOTES }}
+          body_path: RELEASE_NOTES
 
   build:
     runs-on: ${{ matrix.os }}-latest
