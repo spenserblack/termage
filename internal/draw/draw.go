@@ -74,17 +74,26 @@ func Error(s tcell.Screen, err error) {
 	errStr := err.Error()
 	width, height := s.Size()
 
+	statusLines := wordwrap.WordWrap(status, width)
+	errorLines := wordwrap.WordWrap(errStr, width)
+
 	xOrigin := width / 2
 	yOrigin := (height - TitleBarPixels) / 2
 
-	statusStart := xOrigin - (len(status) / 2)
-	for i, r := range []rune(status) {
-		s.SetContent(statusStart+i, yOrigin+TitleBarPixels-1, r, nil, tcell.StyleDefault)
+	statusY := TitleBarPixels + yOrigin - 1
+	for i, line := range statusLines {
+		statusStart := xOrigin - (len(line) / 2)
+		for j, char := range []rune(line) {
+			s.SetContent(statusStart+j, statusY+i, char, nil, tcell.StyleDefault)
+		}
 	}
 
-	errStart := xOrigin - (len(errStr) / 2)
-	for i, r := range []rune(errStr) {
-		s.SetContent(errStart+i, yOrigin+TitleBarPixels, r, nil, tcell.StyleDefault)
+	errorY := statusY + len(statusLines)
+	for i, line := range errorLines {
+		errStart := xOrigin - (len(line) / 2)
+		for j, char := range []rune(line) {
+			s.SetContent(errStart+j, errorY+i, char, nil, tcell.StyleDefault)
+		}
 	}
 }
 

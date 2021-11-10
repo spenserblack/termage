@@ -245,7 +245,7 @@ func TestWrapError(t *testing.T) {
 	}
 	wantStatusLines := [2]string{
 		"  cannot  ",
-		"  draw:   ",
+		"   draw:  ",
 	}
 	for i, want := range wantStatusLines {
 		if actual := string(statusLines[i][:]); actual != want {
