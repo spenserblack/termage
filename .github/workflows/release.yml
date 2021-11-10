@@ -5,6 +5,7 @@ on:
 
 jobs:
   get-version:
+    runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.version.outputs.VERSION }}
 
@@ -12,8 +13,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 2
-        - run: echo "::set-output name=VERSION::$(git describe --tags)"
-          id: version
+      - run: echo "::set-output name=VERSION::$(git describe --tags)"
+        id: version
 
 
   release-notes:
