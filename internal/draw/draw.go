@@ -21,8 +21,8 @@ func Redraw(s tcell.Screen, title string, rgbRunes conversion.RGBRunes, center i
 
 // Title draws an image title to a screen.
 func Title(s tcell.Screen, title string) {
-	clearRow(s, 0, TitleBarPixels)
 	width, _ := s.Size()
+	clearRow(s, 0, TitleBarPixels, width)
 	center := width / 2
 	lines := wordwrap.WordWrap(title, width)
 	for row, line := range lines {
@@ -42,7 +42,7 @@ func Title(s tcell.Screen, title string) {
 func Image(s tcell.Screen, rgbRunes conversion.RGBRunes, center image.Point) {
 	width, height := rgbRunes.Width(), rgbRunes.Height()
 	screenWidth, screenHeight := s.Size()
-	clearRow(s, TitleBarPixels+1, screenHeight)
+	clearImage(s, screenWidth, screenHeight)
 	xOrigin := screenWidth / 2
 	yOrigin := (screenHeight - TitleBarPixels) / 2
 	for x := 0; x < width; x++ {
@@ -98,11 +98,28 @@ func Error(s tcell.Screen, err error) {
 }
 
 // ClearRow clears a single row of a Screen.
-func clearRow(s tcell.Screen, start, end int) {
+func ClearRow(s tcell.Screen, start, end int) {
 	width, _ := s.Size()
+	clearRow(s, start, end, width)
+}
+
+// clearRow is the inner function that takes the screen width as a parameter.
+func clearRow(s tcell.Screen, start, end int, width int) {
 	for row := start; row <= end; row++ {
 		for cell := 0; cell < width; cell++ {
 			s.SetContent(cell, row, ' ', nil, tcell.StyleDefault)
 		}
 	}
+}
+
+// ClearImage clears all rows where the image would be drawn.
+func ClearImage(s tcell.Screen) {
+	width, height := s.Size()
+	clearImage(s, width, height)
+}
+
+// clearImage is the inner function that takes the screen size and height
+// parameters.
+func clearImage(s tcell.Screen, width, height int) {
+	clearRow(s, TitleBarPixels, height, width)
 }
