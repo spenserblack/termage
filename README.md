@@ -9,7 +9,7 @@
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
-## Usage Examples
+## Examples
 
 ### PNG image
 
