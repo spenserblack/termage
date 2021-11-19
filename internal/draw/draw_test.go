@@ -270,6 +270,85 @@ func TestWrapError(t *testing.T) {
 	}
 }
 
+// TestClearRow tests that specified rows would be cleared.
+func TestClearRow(t *testing.T) {
+	const (
+		width  int = 10
+		height int = 10
+	)
+	s := NewMockScreen(width, height)
+
+	// NOTE Putting some fake content into the screen
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			var pixel rune
+			if (x+y)%2 == 0 {
+				pixel = 'x'
+			} else {
+				pixel = 'o'
+			}
+			s.SetContent(x, y, pixel, nil, tcell.StyleDefault)
+		}
+	}
+
+	ClearRow(s, 4, 6)
+
+	unclearedRows := [][2]int{{0, 3}, {7, 9}}
+
+	for _, rowRange := range unclearedRows {
+		start := rowRange[0]
+		end := rowRange[1]
+
+		for y := start; y <= end; y++ {
+			for x, pixel := range s.pixels[y] {
+				if pixel.mainc == ' ' {
+					t.Errorf(`Want pixel @ %d, %d to *not* be clear`, x, y)
+				}
+			}
+		}
+	}
+
+	for y := 4; y <= 6; y++ {
+		for x, pixel := range s.pixels[y] {
+			if pixel.mainc != ' ' {
+				t.Errorf(`Pixel @ %d, %d = %q, want ' '`, x, y, pixel.mainc)
+			}
+		}
+	}
+}
+
+// TestClearImage tests that the area dedicated to the image would be cleared.
+func TestClearImage(t *testing.T) {
+	const (
+		width  int = 10
+		height int = 10
+	)
+	s := NewMockScreen(width, height)
+
+	// NOTE Putting some fake content into the screen
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			var pixel rune
+			if (x+y)%2 == 0 {
+				pixel = 'x'
+			} else {
+				pixel = 'o'
+			}
+			s.SetContent(x, y, pixel, nil, tcell.StyleDefault)
+		}
+	}
+
+	ClearImage(s)
+
+	for y, row := range s.pixels[TitleBarPixels+1:] {
+		for x, pixel := range row {
+			if pixel.mainc != ' ' {
+				t.Errorf(`Pixel @ %d, %d = %q, want ' '`, x, y, pixel.mainc)
+			}
+		}
+	}
+}
+
 type MockScreen struct {
 	width, height int
 	pixels        [][]MockPixel
