@@ -121,5 +121,5 @@ func ClearImage(s tcell.Screen) {
 // clearImage is the inner function that takes the screen size and height
 // parameters.
 func clearImage(s tcell.Screen, width, height int) {
-	clearRow(s, TitleBarPixels+1, height, width)
+	clearRow(s, TitleBarPixels, height, width)
 }

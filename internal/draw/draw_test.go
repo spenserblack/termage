@@ -340,7 +340,7 @@ func TestClearImage(t *testing.T) {
 
 	ClearImage(s)
 
-	for y, row := range s.pixels[TitleBarPixels+1:] {
+	for y, row := range s.pixels[TitleBarPixels:] {
 		for x, pixel := range row {
 			if pixel.mainc != ' ' {
 				t.Errorf(`Pixel @ %d, %d = %q, want ' '`, x, y, pixel.mainc)
