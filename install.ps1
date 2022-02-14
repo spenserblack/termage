@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 if (Test-Path -Path "$Env:ProgramFiles\termage") {
     Write-Host "Overwriting previous install of termage..."
 } else {
