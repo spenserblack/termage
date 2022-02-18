@@ -230,6 +230,8 @@ github.com/hashicorp/serf v0.9.6/go.mod h1:TXZNMjZQijwlDvp+r0b63xZ45H7JmCmgg4gpT
 github.com/iancoleman/strcase v0.2.0/go.mod h1:iwCmte+B7n89clKwxIoIXy/HfoL7AsD47ZCWhYzw7ho=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
+github.com/imretro/go v1.0.0 h1:reif1cODcJvK1l5R33zO+q0oVdVu/ZHD18H+3TeAcaA=
+github.com/imretro/go v1.0.0/go.mod h1:Qysn5JslKkpnLLPnvzJtO+kATSYFGdB676JUEWbVMRs=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
@@ -316,6 +318,10 @@ github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
+github.com/spenserblack/go-bitio v1.3.0 h1:O2k3s9FMAgMSLTTdDk2B/+Jh+lFLE+qgXjXxKp41/z8=
+github.com/spenserblack/go-bitio v1.3.0/go.mod h1:kfwkTPB8ar/aBrUBXcyQPb4LoFhEC6nd/xGTTia4GCE=
+github.com/spenserblack/go-byteutils v1.1.1 h1:oitIPt7vVVEQw0bIVdLq9xsjCVlYTrpLJDEeTZGcquQ=
+github.com/spenserblack/go-byteutils v1.1.1/go.mod h1:GM82nluJ7jtVN10Z2KBAaE88YMCHPMHbhV2PMcEDbuQ=
 github.com/spenserblack/go-wordwrap v1.0.1 h1:g5DAfN4dVnEqjke5FAaEArDS29WfuspCeYhSz4o8DVs=
 github.com/spenserblack/go-wordwrap v1.0.1/go.mod h1:K9uj2SzzQYG9ZUodmITlApXosf3GjW1xNHPrxVNqG58=
 github.com/spf13/afero v1.3.3/go.mod h1:5KUK8ByomD5Ti5Artl0RtHeI5pTF7MIDuXL3yY520V4=

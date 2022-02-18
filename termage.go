@@ -5,6 +5,8 @@ import (
 	_ "image/jpeg" // registers JPEGs
 	_ "image/png"  // registers PNGs
 
+	_ "github.com/imretro/go" // registers imretro
+
 	"github.com/spenserblack/termage/cmd"
 )
 
@@ -28,6 +30,7 @@ func init() {
 		"jpg",
 		"png",
 		"gif",
+		"imretro",
 	}
 	supported = make(map[string]struct{})
 	for _, v := range supportedExtensions {
