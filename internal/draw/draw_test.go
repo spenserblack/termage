@@ -420,6 +420,7 @@ func (s *MockScreen) ShowCursor(int, int) {
 
 func (s *MockScreen) HideCursor() {
 }
+func (s *MockScreen) SetCursorStyle(tcell.CursorStyle) {}
 
 func (s *MockScreen) Size() (int, int) {
 	return s.width, s.height
