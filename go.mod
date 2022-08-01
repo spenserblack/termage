@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/disintegration/imaging v1.6.2
-	github.com/gdamore/tcell/v2 v2.5.1
+	github.com/gdamore/tcell/v2 v2.5.2
 	github.com/imretro/go v1.0.4
 	github.com/spenserblack/go-wordwrap v1.0.1
 	github.com/spf13/cobra v1.5.0
