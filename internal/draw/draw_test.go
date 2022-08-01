@@ -391,6 +391,10 @@ func (s *MockScreen) Clear() {
 	}
 }
 
+func (s *MockScreen) SetSize(int, int) {
+	panic("not implemented")
+}
+
 func (s *MockScreen) SetCell(x int, y int, style tcell.Style, ch ...rune) {
 	panic("Not implemented")
 }
