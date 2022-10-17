@@ -8,6 +8,6 @@ require (
 	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/imretro/go v1.0.4
 	github.com/spenserblack/go-wordwrap v1.0.1
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e // indirect
 )
