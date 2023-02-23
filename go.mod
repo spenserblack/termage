@@ -9,5 +9,5 @@ require (
 	github.com/imretro/go v1.0.4
 	github.com/spenserblack/go-wordwrap v1.0.1
 	github.com/spf13/cobra v1.6.1
-	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e // indirect
+	golang.org/x/image v0.5.0 // indirect
 )
