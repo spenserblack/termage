@@ -23,6 +23,19 @@ const (
 // Screen is the main screen that will be initialized and drawn to.
 var Screen tcell.Screen
 
+// Event channels
+var (
+	images      chan image.Image = make(chan image.Image, 1)
+	titleChan   chan string      = make(chan string, 1)
+	errChan     chan error       = make(chan error, 1)
+	doRedraw    chan struct{}    = make(chan struct{}, 1)
+	shiftImg    chan Shift       = make(chan Shift)
+	resetImg    chan struct{}    = make(chan struct{})
+	resetScreen chan struct{}    = make(chan struct{})
+	zoomIn      chan struct{}    = make(chan struct{})
+	zoomOut     chan struct{}    = make(chan struct{})
+)
+
 // Shift is a wrapper around image.Point that specifies absolute shift
 // or relative.
 type Shift struct {
@@ -50,19 +63,9 @@ func Root(imageFiles []string, supported map[string]struct{}) {
 	if browser.IsEmpty() {
 		log.Fatalf("No valid images found in %q", imageFiles[0])
 	}
-	var (
-		// Modifiers for x and y coordinates of image
-		xMod, yMod  int
-		images      chan image.Image = make(chan image.Image, 1)
-		titleChan   chan string      = make(chan string, 1)
-		errChan     chan error       = make(chan error, 1)
-		doRedraw    chan struct{}    = make(chan struct{}, 1)
-		shiftImg    chan Shift       = make(chan Shift)
-		resetImg    chan struct{}    = make(chan struct{})
-		resetScreen chan struct{}    = make(chan struct{})
-		zoomIn      chan struct{}    = make(chan struct{})
-		zoomOut     chan struct{}    = make(chan struct{})
-	)
+
+	// Modifiers for x and y coordinates of image
+	var xMod, yMod int
 
 	Screen, err = tcell.NewScreen()
 	if err != nil {
