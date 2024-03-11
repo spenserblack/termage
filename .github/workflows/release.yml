@@ -31,7 +31,7 @@ jobs:
       - name: Get Release Notes
         run: 'echo "$(git tag -l --format="%(contents:body)" $GITHUB_REF_NAME)" > RELEASE_NOTES'
       - name: Set Release Notes
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body_path: RELEASE_NOTES
 
@@ -61,6 +61,6 @@ jobs:
       - name: Build
         run: go build -o "${{ env.OUTPUT_FILENAME }}" -ldflags "-X main.version=${{ env.TERMAGE_VERSION }}" termage.go
       - name: Upload Release Assets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.OUTPUT_FILENAME }}
