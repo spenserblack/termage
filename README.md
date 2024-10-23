@@ -10,6 +10,11 @@
 
 Browse images in the terminal *with support for animated GIFs :tada:*
 
+## :warning: Archival Notice
+
+So this tool, while fun to make, was poorly written IMO. Rather than work on it, I'm going to archive it. If you stumble on this repository
+and are interested in a way to render images in the terminal, there are plenty of other options. Personally, I'll be using [viu](https://github.com/atanunq/viu).
+
 ## Examples
 
 ### PNG image
